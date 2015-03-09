@@ -29,7 +29,8 @@ import org.json.JSONObject;
  * {@.en An ECHOMembersGroupsMap is an member's group map.}
  * {@.ja ツリー構造をもったグループマップ。ノードとして{@link com.echopf.members.ECHOMembersGroupObject}を持つ。}
  */
-public class ECHOMembersGroupsMap extends ECHOTreeMap<ECHOMembersGroupObject> {
+public class ECHOMembersGroupsMap extends ECHOTreeMap<ECHOMembersGroupObject>
+									implements  Fetchable<ECHOMembersGroupsMap> {
 
 	
 	/* Begin constructors */
@@ -86,6 +87,30 @@ public class ECHOMembersGroupsMap extends ECHOTreeMap<ECHOMembersGroupObject> {
 	}
 
 	/* End constructors */
+
+	
+	/*
+	 * Implement a Fetchable
+	 * @see com.echopf.Fetchable#fetch()
+	 */
+	public ECHOMembersGroupsMap fetch() throws ECHOException {
+		doFetch(true, null);
+		return this;
+	}
+	
+	
+	/*
+	 * Implement a Fetchable
+	 * @see com.echopf.Fetchable#fetchInBackground()
+	 */
+	public void fetchInBackground(FetchCallback<ECHOMembersGroupsMap> callback) {
+		try {
+			doFetch(false, callback);
+		} catch (ECHOException e) {
+			throw new InternalError();
+		}
+	}
+	
 	
 	
 	/**
@@ -101,12 +126,14 @@ public class ECHOMembersGroupsMap extends ECHOTreeMap<ECHOMembersGroupObject> {
 			if(is_subtree) {
 				JSONObject obj = groups.optJSONObject(0);
 				if(obj == null) throw new ECHOException(0, "The copying data is not acceptable.");
-				JSONArray children = obj.optJSONArray("children");
+				
+				JSONArray jsonChildren = obj.optJSONArray("children");
+				
 				String refid = obj.optString("refid");
 				if(refid.isEmpty()) throw new ECHOException(0, "The copying data is not acceptable. That is why a refid is not specified.");
 				
 				this.node = new ECHOMembersGroupObject(instanceId, refid, obj);
-				this.children = children(children);
+				this.children = children(jsonChildren);
 			}else{
 				this.children = children(groups);
 			}
@@ -126,12 +153,14 @@ public class ECHOMembersGroupsMap extends ECHOTreeMap<ECHOMembersGroupObject> {
 			JSONObject obj = groups.optJSONObject(i);
 			if(obj == null) throw new ECHOException(0, "The copying data is not acceptable.");
 			
+			JSONArray jsonChildren = obj.optJSONArray("children");
+			
 			String refid = obj.optString("refid");
 			if(refid.isEmpty()) throw new ECHOException(0, "The copying data is not acceptable. That is why a refid is not specified.");
 
 			ECHOMembersGroupObject node = new ECHOMembersGroupObject(instanceId, refid, obj);
 			ECHOMembersGroupsMap map = new ECHOMembersGroupsMap(instanceId, refid, node);
-			map.children = children(obj.optJSONArray("children"));
+			map.children = children(jsonChildren);
 			
 			children.add(map);
 		}
