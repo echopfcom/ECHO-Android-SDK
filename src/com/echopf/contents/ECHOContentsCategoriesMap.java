@@ -29,7 +29,8 @@ import org.json.JSONObject;
  * {@.en An ECHOContentsCategoriesMap is an contents category map.}
  * {@.ja ツリー構造をもったカテゴリマップ。ノードとして{@link com.echopf.contents.ECHOContentsCategoryObject}を持つ。}
  */
-public class ECHOContentsCategoriesMap extends ECHOTreeMap<ECHOContentsCategoryObject> {
+public class ECHOContentsCategoriesMap extends ECHOTreeMap<ECHOContentsCategoryObject>
+										implements  Fetchable<ECHOContentsCategoriesMap> {
 
 	
 	/* Begin constructors */
@@ -87,6 +88,29 @@ public class ECHOContentsCategoriesMap extends ECHOTreeMap<ECHOContentsCategoryO
 	}
 
 	/* End constructors */
+
+	
+	/*
+	 * Implement a Fetchable
+	 * @see com.echopf.Fetchable#fetch()
+	 */
+	public ECHOContentsCategoriesMap fetch() throws ECHOException {
+		doFetch(true, null);
+		return this;
+	}
+	
+	
+	/*
+	 * Implement a Fetchable
+	 * @see com.echopf.Fetchable#fetchInBackground()
+	 */
+	public void fetchInBackground(FetchCallback<ECHOContentsCategoriesMap> callback) {
+		try {
+			doFetch(false, callback);
+		} catch (ECHOException e) {
+			throw new InternalError();
+		}
+	}
 	
 	
 	/**
@@ -102,12 +126,14 @@ public class ECHOContentsCategoriesMap extends ECHOTreeMap<ECHOContentsCategoryO
 			if(is_subtree) {
 				JSONObject obj = categories.optJSONObject(0);
 				if(obj == null) throw new ECHOException(0, "The copying data is not acceptable.");
-				JSONArray children = obj.optJSONArray("children");
+				
+				JSONArray jsonChildren = obj.optJSONArray("children");
+				
 				String refid = obj.optString("refid");
 				if(refid.isEmpty()) throw new ECHOException(0, "The copying data is not acceptable. That is why a refid is not specified.");
 				
 				this.node = new ECHOContentsCategoryObject(instanceId, refid, obj);
-				this.children = children(children);
+				this.children = children(jsonChildren);
 			}else{
 				this.children = children(categories);
 			}
@@ -127,12 +153,15 @@ public class ECHOContentsCategoriesMap extends ECHOTreeMap<ECHOContentsCategoryO
 			JSONObject obj = categories.optJSONObject(i);
 			if(obj == null) throw new ECHOException(0, "The copying data is not acceptable.");
 			
+			JSONArray jsonChildren = obj.optJSONArray("children");
+			
 			String refid = obj.optString("refid");
 			if(refid.isEmpty()) throw new ECHOException(0, "The copying data is not acceptable. That is why a refid is not specified.");
 
 			ECHOContentsCategoryObject node = new ECHOContentsCategoryObject(instanceId, refid, obj);			
 			ECHOContentsCategoriesMap map = new ECHOContentsCategoriesMap(instanceId, refid, node);
-			map.children = children(obj.optJSONArray("children"));
+			
+			map.children = children(jsonChildren);
 			
 			children.add(map);
 		}
