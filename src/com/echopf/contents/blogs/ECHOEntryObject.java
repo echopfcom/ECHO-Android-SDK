@@ -32,7 +32,7 @@ import org.json.JSONObject;
  * {@.en An ECHOEntryObject is a particular entry object.}
  * {@.ja 記事オブジェクト。}
  */
-public class ECHOEntryObject extends ECHOContentsObject
+public class ECHOEntryObject extends ECHOContentsObject<ECHOEntryObject>
 								implements  Fetchable<ECHOEntryObject>, 
 											Pushable<ECHOEntryObject>, 
 											Deletable<ECHOEntryObject> {

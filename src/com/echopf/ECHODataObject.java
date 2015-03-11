@@ -32,7 +32,7 @@ import android.os.Handler;
  * An ECHODataObject is an abstract data object.
  * Particular data objects are implemented based on this class.
  */
-public abstract class ECHODataObject extends ECHOObject {
+public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOObject {
 	
 	private JSONObject data = null;
 	private ECHOACLObject newACL = null;
@@ -96,8 +96,7 @@ public abstract class ECHODataObject extends ECHOObject {
 	 * @param callback invoked after the fetching is completed
 	 * @throws ECHOException 
 	 */
-	@SuppressWarnings("rawtypes")
-	protected void doFetch(final boolean sync, final FetchCallback callback) throws ECHOException {
+	protected void doFetch(final boolean sync, final FetchCallback<S> callback) throws ECHOException {
 		final Handler handler = new Handler();
 		
 		// Get ready a background thread
@@ -131,7 +130,7 @@ public abstract class ECHODataObject extends ECHOObject {
 						handler.post(new Runnable() {
 							@Override @SuppressWarnings("unchecked")
 							public void run() {
-								callback.done(ECHODataObject.this, fException);
+								callback.done((S) ECHODataObject.this, fException);
 							}
 						});
 					}
@@ -174,8 +173,7 @@ public abstract class ECHODataObject extends ECHOObject {
 	 * @param callback invoked after the pushing is completed
 	 * @throws ECHOException 
 	 */
-	@SuppressWarnings("rawtypes")
-	protected void doPush(final JSONObject obj, final boolean sync, final PushCallback callback) throws ECHOException {
+	protected void doPush(final JSONObject obj, final boolean sync, final PushCallback<S> callback) throws ECHOException {
 		final Handler handler = new Handler();
 
 
@@ -230,7 +228,7 @@ public abstract class ECHODataObject extends ECHOObject {
 						handler.post(new Runnable() {
 							@Override @SuppressWarnings("unchecked")
 							public void run() {
-								callback.done(ECHODataObject.this, fException);
+								callback.done((S) ECHODataObject.this, fException);
 							}
 						});
 					}
@@ -274,8 +272,7 @@ public abstract class ECHODataObject extends ECHOObject {
 	 * @param callback invoked after the deleting is completed
 	 * @throws ECHOException 
 	 */
-	@SuppressWarnings("rawtypes")
-	protected void doDelete(final boolean sync, final DeleteCallback callback) throws ECHOException {
+	protected void doDelete(final boolean sync, final DeleteCallback<S> callback) throws ECHOException {
 		final Handler handler = new Handler();
 
 		// Get ready a background thread
@@ -310,7 +307,7 @@ public abstract class ECHODataObject extends ECHOObject {
 						handler.post(new Runnable() {
 							@Override @SuppressWarnings("unchecked")
 							public void run() {
-								callback.done(ECHODataObject.this, fException);
+								callback.done((S) ECHODataObject.this, fException);
 							}
 						});
 					}

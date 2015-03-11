@@ -27,7 +27,7 @@ import org.json.JSONObject;
  * {@.en An ECHOContentsCategoryObject is a particular category object.}
  * {@.ja カテゴリオブジェクト。{@link com.echopf.contents.ECHOContentsCategoriesMap}の構成要素。}
  */
-public class ECHOContentsCategoryObject extends ECHODataObject 
+public class ECHOContentsCategoryObject extends ECHODataObject<ECHOContentsCategoryObject> 
 										implements  Fetchable<ECHOContentsCategoryObject>, 
 													Pushable<ECHOContentsCategoryObject>, 
 													Deletable<ECHOContentsCategoryObject>,
