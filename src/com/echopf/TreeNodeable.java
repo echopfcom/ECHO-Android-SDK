@@ -21,7 +21,7 @@ package com.echopf;
  * Declares the interface of tree node operations in the ECHO SDK.
  * @param <T>
  */
-public interface TreeNodeable <T extends ECHODataObject> {
+public interface TreeNodeable <T extends ECHODataObject<T>> {
 
 	/**
 	 * {@.en Sets a new parent of this tree node.}

@@ -32,7 +32,7 @@ import org.json.JSONObject;
  * {@.en An ECHORecordObject is a particular record object.}
  * {@.ja レコードオブジェクト。}
  */
-public class ECHORecordObject extends ECHOContentsObject 
+public class ECHORecordObject extends ECHOContentsObject<ECHORecordObject>
 									implements  Fetchable<ECHORecordObject>, 
 									Pushable<ECHORecordObject>, 
 									Deletable<ECHORecordObject> {

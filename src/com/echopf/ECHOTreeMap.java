@@ -32,12 +32,11 @@ import android.os.Handler;
  * An ECHOTreeMap is an abstract recursive tree map in ECHO.
  * Particular tree maps (e.g. {@link com.echopf.contents.ECHOContentsCategoriesMap}, {@link com.echopf.members.ECHOMembersGroupsMap})
  * are implemented based on this class.
- * @param <T>
  */
-public abstract class ECHOTreeMap<T extends ECHODataObject & TreeNodeable<T>> extends ECHOObject {
+public abstract class ECHOTreeMap<T extends ECHODataObject<T> & TreeNodeable<T>, S extends ECHOTreeMap<T,S>> extends ECHOObject {
 	
 	protected T node;
-	protected List<? extends ECHOTreeMap<T>> children;
+	protected List<S> children;
 	protected boolean is_subtree = false;
 
 	
@@ -107,7 +106,7 @@ public abstract class ECHOTreeMap<T extends ECHODataObject & TreeNodeable<T>> ex
 	 * {@.en Gets lower sub tree maps belonging to this node.}
 	 * {@.ja ノードの配下に存在するサブツリー群を取得します。}
 	 */
-	public List<? extends ECHOTreeMap<T>> getChildren() {
+	public List<S> getChildren() {
 		return this.children;
 	}
 	
@@ -119,8 +118,7 @@ public abstract class ECHOTreeMap<T extends ECHODataObject & TreeNodeable<T>> ex
 	 * @param callback invoked after the fetching is completed
 	 * @throws ECHOException 
 	 */
-	@SuppressWarnings("rawtypes")
-	protected void doFetch(final boolean sync, final FetchCallback callback) throws ECHOException {
+	protected void doFetch(final boolean sync, final FetchCallback<S> callback) throws ECHOException {
 		final Handler handler = new Handler();
 
 		// Get ready a background thread
@@ -150,11 +148,10 @@ public abstract class ECHOTreeMap<T extends ECHODataObject & TreeNodeable<T>> ex
 					// Execute a callback method in the main (UI) thread.
 					if(callback != null) {
 						final ECHOException fException = exception;
-						
 						handler.post(new Runnable() {
 							@Override @SuppressWarnings("unchecked")
-							public void run() {
-								callback.done(ECHOTreeMap.this, fException);
+							public void run() { 
+								callback.done((S) ECHOTreeMap.this, fException);
 							}
 						});
 					}

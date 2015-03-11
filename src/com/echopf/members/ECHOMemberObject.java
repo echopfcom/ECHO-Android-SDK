@@ -27,7 +27,7 @@ import org.json.JSONObject;
  * {@.en An ECHOMemberObject is a particular member object.}
  * {@.ja メンバーオブジェクト。}
  */
-public class ECHOMemberObject extends ECHODataObject
+public class ECHOMemberObject extends ECHODataObject<ECHOMemberObject>
 								implements  Fetchable<ECHOMemberObject>, 
 											Pushable<ECHOMemberObject>, 
 											Deletable<ECHOMemberObject> {
