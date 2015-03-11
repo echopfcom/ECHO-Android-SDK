@@ -29,7 +29,7 @@ import org.json.JSONObject;
  * {@.en An ECHOMembersGroupsMap is an member's group map.}
  * {@.ja ツリー構造をもったグループマップ。ノードとして{@link com.echopf.members.ECHOMembersGroupObject}を持つ。}
  */
-public class ECHOMembersGroupsMap extends ECHOTreeMap<ECHOMembersGroupObject>
+public class ECHOMembersGroupsMap extends ECHOTreeMap<ECHOMembersGroupObject, ECHOMembersGroupsMap>
 									implements  Fetchable<ECHOMembersGroupsMap> {
 
 	

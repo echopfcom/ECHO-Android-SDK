@@ -27,7 +27,7 @@ import org.json.JSONObject;
  * {@.en An ECHOMembersGroupObject is a particular group data.}
  * {@.ja グループオブジェクト。{@link com.echopf.members.ECHOMembersGroupsMap}の構成要素。}
  */
-public class ECHOMembersGroupObject extends ECHODataObject
+public class ECHOMembersGroupObject extends ECHODataObject<ECHOMembersGroupObject>
 									implements  Fetchable<ECHOMembersGroupObject>, 
 												Pushable<ECHOMembersGroupObject>, 
 												Deletable<ECHOMembersGroupObject>,

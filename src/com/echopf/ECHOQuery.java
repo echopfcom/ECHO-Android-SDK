@@ -59,9 +59,8 @@ public class ECHOQuery {
 	 * @param params to control the output objects
 	 * @throws ECHOException
 	 */
-	@SuppressWarnings("rawtypes")
-	public static <T extends ECHODataObject> List<T> doFind(final boolean sync, final String listKey, final String resourceType, final Class<T> clazz, 
-			final FindCallback callback, final String instanceId, JSONObject params) throws ECHOException {
+	public static <T extends ECHODataObject<T>> List<T> doFind(final boolean sync, final String listKey, final String resourceType, final Class<T> clazz, 
+			final FindCallback<T> callback, final String instanceId, JSONObject params) throws ECHOException {
 		
 		// set default params
 		if(params == null) params = new JSONObject();
@@ -144,7 +143,6 @@ public class ECHOQuery {
 							final List<T> fObjList = objList;
 							
 							handler.post(new Runnable() {
-							    @SuppressWarnings("unchecked")
 								@Override
 								public void run() {
 							    	callback.done(fObjList, fException);

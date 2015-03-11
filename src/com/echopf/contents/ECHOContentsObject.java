@@ -26,7 +26,7 @@ import org.json.JSONObject;
 /**
  * An ECHOContentsObject is an abstract contents object.
  */
-public abstract class ECHOContentsObject extends ECHODataObject {
+public abstract class ECHOContentsObject<S extends ECHOContentsObject<S>> extends ECHODataObject<S> {
 
 	
 	/* Begin constructors */
@@ -78,8 +78,7 @@ public abstract class ECHOContentsObject extends ECHODataObject {
 	 * @param callback invoked after the pushing is completed
 	 * @throws ECHOException
 	 */
-	@SuppressWarnings("rawtypes")
-	protected void doPush(boolean sync, PushCallback callback) throws ECHOException {
+	protected void doPush(boolean sync, PushCallback<S> callback) throws ECHOException {
 		try {
 			
 			JSONObject apiObj  = new JSONObject(this.toString());

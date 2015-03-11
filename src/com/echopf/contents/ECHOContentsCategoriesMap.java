@@ -29,7 +29,7 @@ import org.json.JSONObject;
  * {@.en An ECHOContentsCategoriesMap is an contents category map.}
  * {@.ja ツリー構造をもったカテゴリマップ。ノードとして{@link com.echopf.contents.ECHOContentsCategoryObject}を持つ。}
  */
-public class ECHOContentsCategoriesMap extends ECHOTreeMap<ECHOContentsCategoryObject>
+public class ECHOContentsCategoriesMap extends ECHOTreeMap<ECHOContentsCategoryObject, ECHOContentsCategoriesMap>
 										implements  Fetchable<ECHOContentsCategoriesMap> {
 
 	
