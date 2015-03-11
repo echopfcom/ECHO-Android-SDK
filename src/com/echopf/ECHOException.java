@@ -25,7 +25,6 @@ import org.json.JSONObject;
 
 /**
  * An ECHOException represents exceptions or errors occurred in the SDK.
- * @param <T>
  */
 public class ECHOException extends Exception {
 	

@@ -19,7 +19,6 @@ package com.echopf;
 
 /**
  * Declares the interface of delete operations in the SDK.
- * @param <T>
  */
 public interface Deletable <T extends ECHOObject> {
 	

@@ -19,7 +19,6 @@ package com.echopf;
 
 /**
  * Declares the interface of push operations in the ECHO SDK.
- * @param <T>
  */
 public interface Pushable <T extends ECHOObject> {
 

@@ -19,7 +19,6 @@ package com.echopf;
 
 /**
  * A DeleteCallback is used to do something after deleting an object in a background thread.
- * @param <T>
  */
 public abstract class DeleteCallback <T extends ECHOObject> {
 	

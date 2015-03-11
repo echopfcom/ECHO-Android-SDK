@@ -26,7 +26,6 @@ import java.util.TimeZone;
 
 /**
  * An ECHODate is the extended Date object for the SDK.
- * @param <T>
  */
 public class ECHODate extends Date {
 
