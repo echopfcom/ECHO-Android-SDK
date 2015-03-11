@@ -20,7 +20,6 @@ package com.echopf;
 /**
  * An ECHOObject is an abstract object in ECHO.
  * Particular objects are implemented based on this class.
- * @param <T>
  */
 public abstract class ECHOObject {
 

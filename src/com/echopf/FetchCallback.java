@@ -19,7 +19,6 @@ package com.echopf;
 
 /**
  * A FetchCallback is used to do something after fetching an object in a background thread.
- * @param <T>
  */
 public abstract class FetchCallback <T extends ECHOObject> {
 	

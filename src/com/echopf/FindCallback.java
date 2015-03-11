@@ -21,7 +21,6 @@ import java.util.List;
 
 /**
  * A FindCallback is used to do something after finding objects in a background thread.
- * @param <T>
  */
 public abstract class FindCallback <T extends ECHOObject> {
 
