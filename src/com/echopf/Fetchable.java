@@ -19,7 +19,6 @@ package com.echopf;
 
 /**
  * Declares the interface of fetch operations in the ECHO SDK.
- * @param <T>
  */
 public interface Fetchable <T extends ECHOObject> {
 	

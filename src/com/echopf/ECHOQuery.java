@@ -37,7 +37,6 @@ import android.os.Handler;
 
 /**
  * The ECHOQuery contains basic query methods used by the SDK.
- * @param <T>
  */
 public class ECHOQuery {
 

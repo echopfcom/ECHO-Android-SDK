@@ -19,7 +19,6 @@ package com.echopf;
 
 /**
  * A PushCallback is used to do something after pushing an object in a background thread.
- * @param <T>
  */
 public abstract class PushCallback <T extends ECHOObject> {
 
