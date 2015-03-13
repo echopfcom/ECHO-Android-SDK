@@ -70,21 +70,6 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 		}
 	}
 
-	
-	/**
-	 * Constructs a new ECHODataObject based on an existing one on the ECHO server.
-	 * 
-	 * @param instanceId the reference ID of the instance to which the object has belonged
-	 * @param resourceType the type of this object
-	 * @param refid the reference ID of the existing one
-	 * @param data a copying data object by JSONObject
-	 * @throws ECHOException
-	 */
-	protected ECHODataObject(String instanceId, String resourceType, String refid, JSONObject data) throws ECHOException {
-		this(instanceId, resourceType, refid);
-		copyData(data);
-	}
-
 	/* End constructors */
 	
 

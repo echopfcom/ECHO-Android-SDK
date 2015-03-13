@@ -86,6 +86,13 @@ public class ECHODatabaseQuery {
 	protected static List<ECHORecordObject> doFind(boolean sync, final FindCallback<ECHORecordObject> callback, 
 												final String instanceId, final JSONObject params) throws ECHOException {
 
-		return ECHOQuery.doFind(sync, "records", "archive", ECHORecordObject.class, callback, instanceId, params);
+		return ECHOQuery.doFind(sync, "records", "archive", callback, instanceId, params, new ECHODataObjectFactory<ECHORecordObject>() {
+
+			@Override
+			public ECHORecordObject create(String instanceId, String refid, JSONObject obj) throws ECHOException {
+				return new ECHORecordObject(instanceId, refid, obj);
+			}
+			
+		});
 	}
 }

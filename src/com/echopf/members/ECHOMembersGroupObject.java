@@ -72,7 +72,8 @@ public class ECHOMembersGroupObject extends ECHODataObject<ECHOMembersGroupObjec
 	 * @param data a copying group object by JSONObject
 	 */
 	public ECHOMembersGroupObject(String instanceId, String refid, JSONObject data) throws ECHOException {
-		super(instanceId, "groups", refid, data);
+		this(instanceId, refid);
+		copyData(data);
 	}
 
 	/* End constructors */
