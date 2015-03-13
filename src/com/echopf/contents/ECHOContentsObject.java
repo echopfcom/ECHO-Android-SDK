@@ -64,7 +64,8 @@ public abstract class ECHOContentsObject<S extends ECHOContentsObject<S>> extend
 	 * @param data : a copying contents object by JSONObject
 	 */
 	protected ECHOContentsObject(String instanceId, String resourceType, String refid, JSONObject data) throws ECHOException {
-		super(instanceId, resourceType, refid, data);
+		this(instanceId, refid);
+		copyData(data);
 	}
 
 	

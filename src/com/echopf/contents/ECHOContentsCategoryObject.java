@@ -72,7 +72,8 @@ public class ECHOContentsCategoryObject extends ECHODataObject<ECHOContentsCateg
 	 * @param data : a copying category data object by JSONObject
 	 */
 	public ECHOContentsCategoryObject(String instanceId, String refid, JSONObject data) throws ECHOException {
-		super(instanceId, "categories", refid, data);
+		this(instanceId, refid);
+		copyData(data);
 	}
 
 	/* End constructors */
