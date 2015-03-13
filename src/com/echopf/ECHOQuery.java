@@ -22,7 +22,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.lang.reflect.InvocationTargetException;
 import java.net.*;
 import java.io.*;
 
@@ -58,8 +57,9 @@ public class ECHOQuery {
 	 * @param params to control the output objects
 	 * @throws ECHOException
 	 */
-	public static <T extends ECHODataObject<T>> List<T> doFind(final boolean sync, final String listKey, final String resourceType, final Class<T> clazz, 
-			final FindCallback<T> callback, final String instanceId, JSONObject params) throws ECHOException {
+	public static <T extends ECHODataObject<T>> List<T> doFind(final boolean sync, final String listKey, final String resourceType, 
+			final FindCallback<T> callback, final String instanceId, JSONObject params,
+			final ECHODataObjectFactory<T> factory) throws ECHOException {
 		
 		// set default params
 		if(params == null) params = new JSONObject();
@@ -99,7 +99,7 @@ public class ECHOQuery {
 								String refid = item.optString("refid");
 								if(refid.isEmpty()) continue;
 	
-								T obj = (T) clazz.getConstructor(String.class, String.class, JSONObject.class).newInstance(instanceId, refid, item);
+								T obj = factory.create(instanceId, refid, item);
 								objList.add(obj);
 							}
 							/* end copying data */
@@ -129,9 +129,7 @@ public class ECHOQuery {
 						} while(true);
 					} catch (ECHOException e) {
 						exception = e;
-					} catch (InvocationTargetException e) {
-						exception = (ECHOException) e.getCause();
-					} catch (InstantiationException | IllegalAccessException | NoSuchMethodException | RuntimeException e) {
+					} catch (RuntimeException e) {
 						exception = new ECHOException(e);
 					}
 					

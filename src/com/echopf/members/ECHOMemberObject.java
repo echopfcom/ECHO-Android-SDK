@@ -70,7 +70,8 @@ public class ECHOMemberObject extends ECHODataObject<ECHOMemberObject>
 	 * @param data a source JSONObject to copy
 	 */
 	public ECHOMemberObject(String instanceId, String refid, JSONObject data) throws ECHOException {
-		super(instanceId, "member", refid, data);
+		this(instanceId, refid);
+		copyData(data);
 	}
 
 	/* End constructors */

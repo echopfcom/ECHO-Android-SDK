@@ -151,7 +151,14 @@ public class ECHOMemberQuery {
 	 */
 	protected static List<ECHOMemberObject> doFind(boolean sync, final FindCallback<ECHOMemberObject> callback, 
 												final String instanceId, final JSONObject params) throws ECHOException {
-		return ECHOQuery.doFind(sync, "members", "list", ECHOMemberObject.class, callback, instanceId, params);
+		return ECHOQuery.doFind(sync, "members", "list", callback, instanceId, params, new ECHODataObjectFactory<ECHOMemberObject>() {
+
+			@Override
+			public ECHOMemberObject create(String instanceId, String refid, JSONObject obj) throws ECHOException {
+				return new ECHOMemberObject(instanceId, refid, obj);
+			}
+			
+		});
 	}
 	
 	

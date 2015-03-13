@@ -87,7 +87,14 @@ public class ECHOBlogQuery {
 	protected static List<ECHOEntryObject> doFind(boolean sync, final FindCallback<ECHOEntryObject> callback, 
 												final String instanceId, final JSONObject params) throws ECHOException {
 
-		return ECHOQuery.doFind(sync, "entries", "archive", ECHOEntryObject.class, callback, instanceId, params);
+		return ECHOQuery.doFind(sync, "entries", "archive", callback, instanceId, params, new ECHODataObjectFactory<ECHOEntryObject>() {
+
+			@Override
+			public ECHOEntryObject create(String instanceId, String refid, JSONObject obj) throws ECHOException {
+				return new ECHOEntryObject(instanceId, refid, obj);
+			}
+			
+		});
 	}
 		
 }
