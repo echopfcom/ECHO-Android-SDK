@@ -390,12 +390,15 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 	 * @params value : a JSONObject, JSONArray, String, Boolean, Integer, Long, Double, NULL or null. May not be NaNs or infinities.
 	 * @throws ECHOException
 	 */
-	public JSONObject accumulate(String name, Object value) throws ECHOException {
+	@SuppressWarnings("unchecked")
+	public S accumulate(String name, Object value) throws ECHOException {
 		try {
-			return data.accumulate(name, value);
+			data.accumulate(name, value);
 		} catch (JSONException e) {
 			throw new ECHOException(e);
 		}
+		
+		return (S) this;
 	}
 	
 	/**
@@ -540,14 +543,14 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 	/**
 	 * Returns the value mapped by name if it exists and is a boolean or can be coerced to a boolean, or false otherwise.
 	 */
-	public Object optBoolean(String name) {
+	public boolean optBoolean(String name) {
 		return data.optBoolean(name);
 	} 
 	
 	/**
 	 * Returns the value mapped by name if it exists and is a boolean or can be coerced to a boolean, or fallback otherwise.
 	 */
-	public Object optBoolean(String name, boolean fallback) {
+	public boolean optBoolean(String name, boolean fallback) {
 		return data.optBoolean(name, fallback);
 	} 
 	
@@ -625,72 +628,90 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 	 * Maps name to value, clobbering any existing name/value mapping with the same name.
 	 * @throws ECHOException 
 	 */
-	public JSONObject put(String name, int value) throws ECHOException {
+	@SuppressWarnings("unchecked")
+	public S put(String name, int value) throws ECHOException {
 		try {
-			return data.put(name, value);
+			data.put(name, value);
 		} catch (JSONException e) {
 			throw new ECHOException(e);
 		}
+		
+		return (S) this;
 	} 
 	
 	/**
 	 * Maps name to value, clobbering any existing name/value mapping with the same name.
 	 * @throws ECHOException 
 	 */
-	public JSONObject put(String name, long value) throws ECHOException {
+	@SuppressWarnings("unchecked")
+	public S put(String name, long value) throws ECHOException {
 		try {
-			return data.put(name, value);
+			data.put(name, value);
 		} catch (JSONException e) {
 			throw new ECHOException(e);
 		}
+		
+		return (S) this;
 	} 
 	
 	/**
 	 * Maps name to value, clobbering any existing name/value mapping with the same name. If the value is null, any existing mapping for name is removed.
 	 * @throws ECHOException 
 	 */
-	public JSONObject put(String name, Object value) throws ECHOException {
+	@SuppressWarnings("unchecked")
+	public S put(String name, Object value) throws ECHOException {
 		try {
-			return data.put(name, value);
+			data.put(name, value);
 		} catch (JSONException e) {
 			throw new ECHOException(e);
 		}
+		
+		return (S) this;
 	} 
 	
 	/**
 	 * Maps name to value, clobbering any existing name/value mapping with the same name.
 	 * @throws ECHOException 
 	 */
-	public JSONObject put(String name, boolean value) throws ECHOException {
+	@SuppressWarnings("unchecked")
+	public S put(String name, boolean value) throws ECHOException {
 		try {
-			return data.put(name, value);
+			data.put(name, value);
 		} catch (JSONException e) {
 			throw new ECHOException(e);
 		}
+		
+		return (S) this;
 	} 
 	
 	/**
 	 * Maps name to value, clobbering any existing name/value mapping with the same name.
 	 * @throws ECHOException 
 	 */
-	public JSONObject put(String name, double value) throws ECHOException {
+	@SuppressWarnings("unchecked")
+	public S put(String name, double value) throws ECHOException {
 		try {
-			return data.put(name, value);
+			data.put(name, value);
 		} catch (JSONException e) {
 			throw new ECHOException(e);
 		}
+		
+		return (S) this;
 	} 
 	
 	/**
 	 * Equivalent to put(name, value) when both parameters are non-null; does nothing otherwise.
 	 * @throws ECHOException 
 	 */
-	public JSONObject putOpt(String name, Object value) throws ECHOException {
+	@SuppressWarnings("unchecked")
+	public S putOpt(String name, Object value) throws ECHOException {
 		try {
-			return data.put(name, value);
+			data.putOpt(name, value);
 		} catch (JSONException e) {
 			throw new ECHOException(e);
 		}
+		
+		return (S) this;
 	} 
 	
 	/**
