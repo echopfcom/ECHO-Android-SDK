@@ -72,20 +72,14 @@ public abstract class ECHOContentsObject<S extends ECHOContentsObject<S>> extend
 	/* End constructors */
 	
 
-	/**
-	 * Does Push data to the remote server in a background thread.
-	 * @param sync : if set TRUE, then the main (UI) thread is waited for complete the pushing in a background thread. 
-	 * 				 (a synchronous communication)
-	 * @param callback invoked after the pushing is completed
-	 * @throws ECHOException
-	 */
-	protected void doPush(boolean sync, PushCallback<S> callback) throws ECHOException {
+	@Override
+	protected JSONObject buildRequestContents() throws ECHOException {
+		JSONObject obj = super.buildRequestContents();
+		
 		try {
 			
-			JSONObject apiObj  = new JSONObject(this.toString());
-			
 			// categories
-			JSONArray sdk_categories = this.optJSONArray("categories");
+			JSONArray sdk_categories = obj.optJSONArray("categories");
 			
 			if(sdk_categories != null) {
 				JSONArray api_categories = new JSONArray();
@@ -98,14 +92,14 @@ public abstract class ECHOContentsObject<S extends ECHOContentsObject<S>> extend
 					}
 				}
 			
-				apiObj.put("categories", api_categories);
+				obj.put("categories", api_categories);
 			}
-
-			super.doPush(apiObj, sync, callback);
-
+			
 		} catch (JSONException e) {
 			throw new RuntimeException(e);
 		}
+
+		return obj;
 	}
 
 	@Override

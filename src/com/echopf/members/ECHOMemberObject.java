@@ -144,19 +144,13 @@ public class ECHOMemberObject extends ECHODataObject<ECHOMemberObject>
 			throw new InternalError();
 		}
 	}
+
 	
-	
-	/**
-	 * Does Push data to the remote server in a background thread.
-	 * @param sync : if set TRUE, then the main (UI) thread is waited for complete the pushing in a background thread. 
-	 * 				 (a synchronous communication)
-	 * @param callback invoked after the pushing is completed
-	 * @throws ECHOException
-	 */
-	protected void doPush(boolean sync, PushCallback<ECHOMemberObject> callback) throws ECHOException {
+	@Override
+	protected JSONObject buildRequestContents() throws ECHOException {
+		JSONObject obj = super.buildRequestContents();
+		
 		try {
-			
-			JSONObject apiObj  = new JSONObject(this.toString());
 			
 			// groups
 			JSONArray sdk_groups = this.optJSONArray("groups");
@@ -172,14 +166,14 @@ public class ECHOMemberObject extends ECHODataObject<ECHOMemberObject>
 					}
 				}
 				
-				apiObj.put("groups", api_groups);
+				obj.put("groups", api_groups);
 			}
 			
-			super.doPush(apiObj, sync, callback);
-
 		} catch (JSONException e) {
 			throw new RuntimeException(e);
 		}
+
+		return obj;
 	}
 	
 	
