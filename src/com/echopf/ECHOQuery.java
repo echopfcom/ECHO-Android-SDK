@@ -213,6 +213,17 @@ public class ECHOQuery {
 
 	
 	/**
+	 * Sends a multipart POST request.
+	 * @param path a request url path
+	 * @param data request contents
+	 * @throws ECHOException
+	 */
+	public static JSONObject multipartPostRequest(String path, JSONObject data) throws ECHOException {
+		return request(path, "POST", data, true);
+	}
+
+	
+	/**
 	 * Sends a PUT request.
 	 * @param path a request url path
 	 * @param data request contents
@@ -220,6 +231,18 @@ public class ECHOQuery {
 	 */
 	public static JSONObject putRequest(String path, JSONObject data) throws ECHOException {
 		return request(path, "PUT", data);
+	}
+
+
+	
+	/**
+	 * Sends a multipart PUT request.
+	 * @param path a request url path
+	 * @param data request contents
+	 * @throws ECHOException
+	 */
+	public static JSONObject multipartPutRequest(String path, JSONObject data) throws ECHOException {
+		return request(path, "PUT", data, true);
 	}
 
 	
@@ -239,8 +262,20 @@ public class ECHOQuery {
 	 * @param httpMethod a request method (GET/POST/PUT/DELETE)
 	 * @throws ECHOException
 	 */
-	private static JSONObject request(String path, String httpMethod) throws ECHOException {
+	public static JSONObject request(String path, String httpMethod) throws ECHOException {
 		return request(path, httpMethod, null);
+	}
+
+
+	/**
+	 * Sends a HTTP request.
+	 * @param path a request url path
+	 * @param httpMethod a request method (GET/POST/PUT/DELETE)
+	 * @param data request contents/parameters
+	 * @throws ECHOException
+	 */
+	public static JSONObject request(String path, String httpMethod, JSONObject data) throws ECHOException {
+		return request(path, httpMethod, data, false);
 	}
 	
 
@@ -249,25 +284,17 @@ public class ECHOQuery {
 	 * @param path a request url path
 	 * @param httpMethod a request method (GET/POST/PUT/DELETE)
 	 * @param data request contents/parameters
+	 * @param multipart use multipart/form-data to encode the contents
 	 * @throws ECHOException
 	 */
-	private static JSONObject request(String path, String httpMethod, JSONObject data) throws ECHOException  {
+	public static JSONObject request(String path, String httpMethod, JSONObject data, boolean multipart) throws ECHOException  {
+		
 		final String secureDomain = ECHO.secureDomain;
-		final String appId = ECHO.appId;
-		final String appKey = ECHO.appKey;
-		final String accessToken = ECHO.accessToken;
-		
-		if(secureDomain == null || appId == null || appKey == null) 
-			throw new IllegalStateException("The SDK is not initialized.　Please call the ECHO.initialize().");
-		
-		
+		if(secureDomain == null) throw new IllegalStateException("The SDK is not initialized.　Please call the ECHO.initialize().");
+
 		String url = new StringBuilder("https://").append(secureDomain)
 				.append("/").append(path).append("/rest_api=1.0/").toString();
 
-		JSONObject responseObj = null;
-		HttpsURLConnection http_client = null;
-
-			
 		// Build query_string
 		if (httpMethod.equals("GET") && data != null) {
 			boolean firstItem = true;
@@ -286,37 +313,199 @@ public class ECHOQuery {
 				url = url.concat(value);
 			}
 		}
+		
+		HttpsURLConnection httpClient = null;
+		JSONObject response = null;
 
+		try {
+			
+			URL urlConn = new URL(url.toString());
+			httpClient = (HttpsURLConnection) urlConn.openConnection();
+			
+			String jsonStr = ECHOQuery.getResponseString(requestRaw(httpClient, httpMethod, data, multipart));
+			response = new JSONObject(jsonStr);
+			
+		} catch (IOException e) {
+			throw new ECHOException(e);
+		} catch (JSONException e) {
+			throw new ECHOException(ECHOException.INVALID_JSON_FORMAT, "Invalid JSON format.");
+		} finally {
+			if (httpClient != null) httpClient.disconnect();
+		}
+		
+		return response;
+	}
+
+	
+	/**
+	 * Sends a HTTP request with optional request contents/parameters.
+	 * @param httpClient HttpsURLConnection
+	 * @param httpMethod a request method (GET/POST/PUT/DELETE)
+	 * @param data request contents/parameters
+	 * @param multipart use multipart/form-data to encode the contents
+	 * @throws ECHOException
+	 */
+	public static InputStream requestRaw(HttpsURLConnection httpClient, String httpMethod, JSONObject data, boolean multipart) throws ECHOException  {
+		
+		final String appId = ECHO.appId;
+		final String appKey = ECHO.appKey;
+		final String accessToken = ECHO.accessToken;
+		
+		if(appId == null || appKey == null) throw new IllegalStateException("The SDK is not initialized.　Please call the ECHO.initialize().");
+
+		InputStream responseInputStream = null;
 		
 		try {
+			httpClient.setRequestMethod(httpMethod);
+			httpClient.addRequestProperty("X-ECHO-APP-ID", appId);
+			httpClient.addRequestProperty("X-ECHO-APP-KEY", appKey);
 
-			URL url_conn = new URL(url.toString());
-			http_client = (HttpsURLConnection) url_conn.openConnection();
-			http_client.setRequestMethod(httpMethod);
-			http_client.addRequestProperty("CONTENT-TYPE", "application/json");
-			http_client.addRequestProperty("X-ECHO-APP-ID", appId);
-			http_client.addRequestProperty("X-ECHO-APP-KEY", appKey);
-			
 			// Set access token
-			if(accessToken != null && !accessToken.isEmpty()) {
-				http_client.addRequestProperty("X-ECHO-ACCESS-TOKEN", accessToken);
-			}
+			if(accessToken != null && !accessToken.isEmpty()) httpClient.addRequestProperty("X-ECHO-ACCESS-TOKEN", accessToken);
 
 			// Build content
 			if (!httpMethod.equals("GET") && data != null) {
-				http_client.setDoOutput(true);
-				http_client.setChunkedStreamingMode(0); // use default chunk size
-				BufferedWriter wrBuffer = new BufferedWriter(new OutputStreamWriter(http_client.getOutputStream()));
-				wrBuffer.write(data.toString());
-				wrBuffer.close();
+				
+				httpClient.setDoOutput(true);
+				httpClient.setChunkedStreamingMode(0); // use default chunk size
+				
+				if(multipart == false) { // application/json
+
+					httpClient.addRequestProperty("CONTENT-TYPE", "application/json");
+					BufferedWriter wrBuffer = new BufferedWriter(new OutputStreamWriter(httpClient.getOutputStream()));
+					wrBuffer.write(data.toString());
+					wrBuffer.close();
+					
+				}else{ // multipart/form-data
+					
+			        final String boundary =  "*****" + UUID.randomUUID().toString() + "*****";
+					final String twoHyphens = "--";
+			        final String lineEnd = "\r\n";
+			        final int maxBufferSize = 1024*1024*3;
+
+					httpClient.setRequestMethod("POST");
+					httpClient.addRequestProperty("CONTENT-TYPE", "multipart/form-data; boundary=" + boundary);
+					
+			        final DataOutputStream outputStream = new DataOutputStream(httpClient.getOutputStream());
+
+					try {
+						
+						JSONObject postData = new JSONObject();
+						postData.putOpt("method", httpMethod);
+						postData.putOpt("data", data);
+						
+						new Object() {
+							
+							public void post(JSONObject data, List<String> currentKeys) throws JSONException, IOException {
+
+								Iterator<?> keys = data.keys();
+								while(keys.hasNext()) {
+								    String key = (String)keys.next();
+									List<String> newKeys = new ArrayList<String>(currentKeys);
+									newKeys.add(key);
+									
+								    Object val = data.get(key);
+								    
+								    // convert JSONArray into JSONObject
+								    if(val instanceof JSONArray) {
+								    	JSONArray array = (JSONArray) val;
+								    	JSONObject val2 = new JSONObject();
+								    	
+								    	for(Integer i=0 ; i<array.length(); i++) {
+											val2.putOpt(i.toString(), array.get(i));
+								    	}
+								    	
+								    	val = val2;
+								    }
+
+							    	// build form-data name
+							    	String name = "";
+							    	for(int i=0; i<newKeys.size(); i++) {
+							    		String key2 = newKeys.get(i);
+							    		name += (i==0) ? key2 : "["+key2+"]";
+							    	}
+									
+								    if(val instanceof ECHOFile) {
+
+								    	ECHOFile file = (ECHOFile) val;
+								    	if(file.getLocalBytes() == null) continue;
+								    	
+										InputStream fileInputStream = new ByteArrayInputStream(file.getLocalBytes());
+										
+										if(fileInputStream != null) {
+											
+									    	String mimeType = URLConnection.guessContentTypeFromName(file.getFileName());
+
+									        outputStream.writeBytes(twoHyphens + boundary + lineEnd);
+									        outputStream.writeBytes("Content-Disposition: form-data; name=\"" + name + "\"; filename=\"" + file.getFileName() +"\"" + lineEnd);
+									        outputStream.writeBytes("Content-Type: " + mimeType + lineEnd);
+									        outputStream.writeBytes("Content-Transfer-Encoding: binary" + lineEnd);
+									        outputStream.writeBytes(lineEnd);
+					
+									        int bytesAvailable, bufferSize, bytesRead;
+									        do {
+										        bytesAvailable = fileInputStream.available();
+										        bufferSize = Math.min(bytesAvailable, maxBufferSize);
+										        byte[] buffer = new byte[bufferSize];
+									        	bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+
+									        	if(bytesRead <= 0) break;
+									        	outputStream.write(buffer, 0, bufferSize);
+									        } while(true);
+									        
+									        outputStream.writeBytes(lineEnd);
+											fileInputStream.close();
+										}
+										
+								    }else if (val instanceof JSONObject) {
+								    	
+								    	this.post((JSONObject) val, newKeys);
+								    
+								    } else {
+								    	
+								    	// post form-data
+							            outputStream.writeBytes(twoHyphens + boundary + lineEnd);
+							            outputStream.writeBytes("Content-Disposition: form-data; name=\""+ name +"\"" + lineEnd);
+							            outputStream.writeBytes("Content-Type: text/plain" + lineEnd);
+							            outputStream.writeBytes(lineEnd);
+								            
+							            try { // in case of boolean
+								            boolean bool = data.getBoolean(key);
+								            outputStream.writeBytes(bool ? "true":"");
+							            } catch (JSONException e) { // if the value is not a Boolean or the String "true" or "false".
+								            outputStream.writeBytes(val.toString());
+							            }
+							            
+							            outputStream.writeBytes(lineEnd);
+								    }
+
+								    
+								}
+							}
+						}.post(postData, new ArrayList<String>());
+
+					} catch (JSONException e) {
+						
+						throw new ECHOException(e);
+						
+					} finally {
+
+			            outputStream.writeBytes(twoHyphens + boundary + lineEnd);
+			            outputStream.flush();
+			            outputStream.close();
+					
+					}
+				}
+				
+			}else{
+				
+				httpClient.addRequestProperty("CONTENT-TYPE", "application/json");
+			
 			}
 			
-			if (http_client.getResponseCode() != -1 /*== HttpURLConnection.HTTP_OK*/) {
-				try {
-					responseObj = ECHOQuery.getResponseObject(http_client.getInputStream());
-				} catch (JSONException e) {
-					throw new ECHOException(ECHOException.INVALID_JSON_FORMAT, "Invalid JSON format.");
-				}
+			
+			if (httpClient.getResponseCode() != -1 /*== HttpURLConnection.HTTP_OK*/) {
+				responseInputStream = httpClient.getInputStream();
 			}
 			
 		} catch (IOException e) {
@@ -325,18 +514,17 @@ public class ECHOQuery {
 			int errorCode = -1;
 			
 			try {
-				errorCode = http_client.getResponseCode();
+				errorCode = httpClient.getResponseCode();
 			} catch (IOException e1) {
 				throw new ECHOException(e1);
 			}
 			
 			// get error contents
+			JSONObject responseObj;
 			try {
-				responseObj = ECHOQuery.getResponseObject(http_client.getErrorStream());
+				String jsonStr = ECHOQuery.getResponseString(httpClient.getErrorStream());
+				responseObj = new JSONObject(jsonStr);
 			} catch (JSONException e1) {
-				
-				System.out.println(e1 + "::" + errorCode);
-				
 				if(errorCode == 404) {
 					throw new ECHOException(ECHOException.RESOURCE_NOT_FOUND, "Resource not found.");
 				}
@@ -359,36 +547,28 @@ public class ECHOQuery {
 				}
 			}
 			
-			throw new ECHOException(e);
-			
-		} finally {
-			
-			if (http_client != null) http_client.disconnect();
-		
+			throw new ECHOException(e);	
 		}
-
-		return responseObj;
+		
+		return responseInputStream;
 	}
 
 	
 	/**
-	 * Converts a response input stream into a JSON object.
+	 * Converts a response input stream into string.
 	 */
-	private static JSONObject getResponseObject(InputStream inputStream) throws JSONException {
+	private static String getResponseString(InputStream inputStream) {
 
-		
 		try {
-			
 			if(inputStream != null) {
 				BufferedReader rdBuffer = new BufferedReader(new InputStreamReader(inputStream));
-				StringBuilder json_string = new StringBuilder();
+				StringBuilder ret = new StringBuilder();
 				String str = null;
 				while ((str = rdBuffer.readLine()) != null) {
-					json_string.append(str);
+					ret.append(str);
 				}
 				rdBuffer.close();
-				
-				return new JSONObject(json_string.toString());	
+				return ret.toString();
 			}
 			
 		} catch (IOException e) {

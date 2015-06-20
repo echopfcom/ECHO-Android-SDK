@@ -156,33 +156,27 @@ public class ECHOContentsCategoryObject extends ECHODataObject<ECHOContentsCateg
 		this.newParent = newParent;
 	}
 
-	
-	/**
-	 * Does Push data to the ECHO server in a background thread.
-	 * @param sync : if set TRUE, then the main (UI) thread is waited for complete the pushing in a background thread. 
-	 * 				 (a synchronous communication)
-	 * @param callback invoked after the pushing is completed
-	 * @throws ECHOException
-	 */
-	protected void doPush(boolean sync, PushCallback<ECHOContentsCategoryObject> callback) throws ECHOException {
 
+	@Override
+	protected JSONObject buildRequestContents() throws ECHOException {
+		JSONObject obj = super.buildRequestContents();
+		
 		try {
-			JSONObject apiObj  = new JSONObject(this.toString());
 			
 			if(this.newParent != null) {
 				String new_parent_refid = this.newParent.getRefid();
 				
 				if(!new_parent_refid.isEmpty()) {
-					apiObj.put("parent_refid", new_parent_refid);
+					obj.put("parent_refid", new_parent_refid);
 					this.newParent = null;
 				}
 			}
 			
-			super.doPush(apiObj, sync, callback);
-			
 		} catch (JSONException e) {
 			throw new RuntimeException(e);
 		}
+
+		return obj;
 	}
 
 	

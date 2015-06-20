@@ -22,8 +22,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.json.*;
+
+import com.echopf.contents.blogs.ECHOEntryObject;
+import com.echopf.contents.databases.ECHORecordObject;
+import com.echopf.members.ECHOMemberObject;
 
 import android.os.Handler;
 
@@ -37,6 +43,7 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 	private JSONObject data = null;
 	private ECHOACLObject newACL = null;
 	private ECHOACLObject currentACL = null;
+	private Boolean multipart = null;
 	
 	
 	/* Begin constructors */
@@ -71,6 +78,41 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 	}
 
 	/* End constructors */
+	
+
+	/**
+	 * Factory method of particular data objects.
+	 * 
+	 * @param data a source object by JSONObject
+	 */
+	public static ECHODataObject<?> factory(JSONObject data) {
+
+		try {
+			
+			String refid = data.getString("refid");
+			String resourceType = data.getString("resource_type");
+
+			String urlPath = data.getString("url_path");
+			Matcher m = Pattern.compile("^/([^/]+)").matcher(urlPath);
+			
+			if(!m.find()) return null;
+			String instanceId = m.group(1);
+			
+			
+			if(resourceType.equals("entry")) { // ECHOEntryObject
+				return new ECHOEntryObject(instanceId, refid, data);
+			}else if(resourceType.equals("record")) { // ECHODatabaseObject
+				return new ECHORecordObject(instanceId, refid, data);
+			}else if(resourceType.equals("member")) { // ECHOMemberObject
+				return new ECHOMemberObject(instanceId, refid, data);	
+			}
+			
+		} catch (Exception ignored) {
+			// skip
+		}
+		
+		return null;
+	}
 	
 
 	/**
@@ -148,7 +190,7 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 		    }
 	    }
 	}
-
+	
 
 	/**
 	 * Does Push data to the ECHO server in a background thread.
@@ -158,11 +200,15 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 	 * @param callback invoked after the pushing is completed
 	 * @throws ECHOException 
 	 */
-	protected void doPush(final JSONObject obj, final boolean sync, final PushCallback<S> callback) throws ECHOException {
-		final Handler handler = new Handler();
-
-
+	protected void doPush(final boolean sync, final PushCallback<S> callback) throws ECHOException {
+		
+		final JSONObject obj = buildRequestContents();
+		
+		if(this.multipart == null) throw new RuntimeException("buildRequestContents() had not been completed.");
+		final boolean fMultipart = this.multipart;
+		
 		// Get ready a background thread
+		final Handler handler = new Handler();
 	    ExecutorService executor = Executors.newSingleThreadExecutor();
 	    Callable<Object> communictor = new Callable<Object>() {
 
@@ -171,28 +217,22 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 
 				JSONObject data = null;
 				ECHOException exception = null;
-
-    			// set acl
-				obj.remove("acl");
-				if(newACL != null) {
-					JSONObject ACLObj = newACL.toJSONObject();
-					
-					try {
-						obj.put("acl", ACLObj);
-					} catch (JSONException e) {
-						throw new RuntimeException(e);
-					}
-					newACL = null;
-				}
     			
 				try {
 		    		synchronized (lock) {
 
-						//
-						if(refid == null) {
-							data = ECHOQuery.postRequest(getRequestURLPath(), obj);
-						}else{
-							data = ECHOQuery.putRequest(getRequestURLPath(), obj);
+		    			if(refid == null) { // post
+		    				if(fMultipart == false) {
+		    					data = ECHOQuery.postRequest(getRequestURLPath(), obj);
+		    				}else{
+		    					data = ECHOQuery.multipartPostRequest(getRequestURLPath(), obj);
+		    				}
+						}else{ // put
+		    				if(fMultipart == false) {
+		    					data = ECHOQuery.putRequest(getRequestURLPath(), obj);
+		    				}else{
+		    					data = ECHOQuery.multipartPutRequest(getRequestURLPath(), obj);
+		    				}
 						}
 						
 						refid = data.optString("refid");
@@ -346,12 +386,69 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 	
 
 	/**
+	 * Build a request contents object.
+	 * @throws ECHOException 
+	 */
+	protected JSONObject buildRequestContents() throws ECHOException {
+		JSONObject obj = this.cloneData();
+		
+		this.multipart = false; // initialize multipart
+
+		// acl
+		obj.remove("acl");
+		if(newACL != null) {
+			JSONObject ACLObj = newACL.toJSONObject();
+			
+			try {
+				obj.put("acl", ACLObj);
+			} catch (JSONException e) {
+				throw new RuntimeException(e);
+			}
+			newACL = null;
+		}
+
+		// contents
+		JSONObject contentsObj = obj.optJSONObject("contents");
+		if(contentsObj != null) {
+			Iterator<?> iter = contentsObj.keys();
+			
+			while (iter.hasNext()) {
+				String key = (String) iter.next();
+				Object elemObj = contentsObj.opt(key);
+				if(elemObj == null) continue;
+				
+				if(elemObj instanceof ECHOFile) { // _type = file
+					this.multipart = true;
+				}else if(elemObj instanceof ECHODataObject) { // _type = instance
+					contentsObj.remove(key);
+					
+					String refid = ((ECHODataObject<?>) elemObj).refid;
+
+					try {
+						if(refid != null) {
+							contentsObj.put(key, refid);
+						}else{
+							JSONObject detail = new JSONObject("{\""+key+"\":{error_code:150110, error_message:\"Reference not exist\"");
+							throw new ECHOException(150000, "Validation errors occurred", detail);
+						}
+					} catch (JSONException e) {
+						throw new RuntimeException(e);
+					}
+				}
+			}
+		}
+		
+		return obj;
+	}
+	
+
+	/**
 	 * Copy data from the specified json object
 	 * 
 	 * @throws ECHOException
 	 */
 	protected void copyData(JSONObject data) throws ECHOException {
-		
+
 		// Reset current all data
 		if(this.data.length() > 0) this.data = new JSONObject();
 
@@ -360,12 +457,39 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 		while (iter.hasNext()) {
 			String key = (String)iter.next();
 			
-			// set acl
+			// acl
 			if(key.equals("acl")) {
 				JSONObject aclObj = data.optJSONObject("acl");
 				if(aclObj == null) throw new ECHOException(0, "The copying data is not acceptable. That is why a acl field is not specified.");
 				this.currentACL = new ECHOACLObject(aclObj);
 				continue;
+				
+			// contents
+			}else if(key.equals("contents")) {
+
+				JSONObject contentsObj = data.optJSONObject("contents");
+				if(contentsObj == null) continue;
+				
+				Iterator<?> iter2 = contentsObj.keys();
+				while (iter2.hasNext()) {
+					String key2 = (String) iter2.next();
+					JSONObject elemObj = contentsObj.optJSONObject(key2);
+					if(elemObj == null) continue;
+					
+					String type = elemObj.optString("_type");
+
+					try {
+						
+						if(type.equals("file")) {
+							contentsObj.put(key2, new ECHOFile(elemObj));
+						} else if (type.equals("instance")) {
+							contentsObj.put(key2, ECHODataObject.factory(elemObj));
+						}
+						
+					} catch (JSONException e) {
+						throw new RuntimeException(e);
+					}
+				}
 			}
 
 			try {
@@ -817,5 +941,25 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 	} 
 	
 	/* End JSONObject operators */
+
+
+	/**
+	 * Clone this data object.
+	 */
+	public JSONObject cloneData() {
+		JSONObject data = new JSONObject();
 	
+		Iterator<?> iter = this.data.keys();
+		while (iter.hasNext()) {
+			String key = (String)iter.next();
+			
+			try {
+				data.put(key, this.data.get(key));
+			} catch (JSONException e) {
+				throw new RuntimeException(e);
+			}
+		}
+			
+		return data;
+	}
 }
