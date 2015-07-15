@@ -428,7 +428,7 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 						if(refid != null) {
 							contentsObj.put(key, refid);
 						}else{
-							JSONObject detail = new JSONObject("{\""+key+"\":{error_code:150110, error_message:\"Reference not exist\"");
+							JSONObject detail = new JSONObject("{\""+key+"\":{error_code:150110, error_message:\"Reference not exist\"}}");
 							throw new ECHOException(150000, "Validation errors occurred", detail);
 						}
 					} catch (JSONException e) {
