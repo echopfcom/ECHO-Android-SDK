@@ -18,7 +18,6 @@ package com.echopf.members;
 
 import com.echopf.*;
 
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -59,7 +58,7 @@ public class ECHOMemberQuery {
 	 * 		{@.ja 検索完了後に実行するコールバックを指定します。}
 	 * @throws ECHOException 
 	 */
-	public static List<ECHOMemberObject> find(String instanceId, JSONObject params) throws ECHOException {
+	public static ECHOList<ECHOMemberObject> find(String instanceId, JSONObject params) throws ECHOException {
 		return doFind(true, null, instanceId, params);
 	}
 
@@ -149,7 +148,7 @@ public class ECHOMemberQuery {
 	 * @param params to control the output
 	 * @throws ECHOException
 	 */
-	protected static List<ECHOMemberObject> doFind(boolean sync, final FindCallback<ECHOMemberObject> callback, 
+	protected static ECHOList<ECHOMemberObject> doFind(boolean sync, final FindCallback<ECHOMemberObject> callback, 
 												final String instanceId, final JSONObject params) throws ECHOException {
 		return ECHOQuery.doFind(sync, "members", "list", callback, instanceId, params, new ECHODataObjectFactory<ECHOMemberObject>() {
 

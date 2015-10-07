@@ -57,23 +57,25 @@ public class ECHOQuery {
 	 * @param params to control the output objects
 	 * @throws ECHOException
 	 */
-	public static <T extends ECHODataObject<T>> List<T> doFind(final boolean sync, final String listKey, final String resourceType, 
+	public static <T extends ECHODataObject<T>> ECHOList<T> doFind(final boolean sync, final String listKey, final String resourceType, 
 			final FindCallback<T> callback, final String instanceId, final JSONObject fParams,
 			final ECHODataObjectFactory<T> factory) throws ECHOException {
 		
 		// Get ready a background thread
 		final Handler handler = new Handler();
 	    ExecutorService executor = Executors.newSingleThreadExecutor();
-	    Callable<List<T>> communicator = new Callable<List<T>>() {
+	    Callable<ECHOList<T>> communicator = new Callable<ECHOList<T>>() {
 	    	  @Override
-	    	  public List<T> call() throws ECHOException {
-					List<T> objList = new ArrayList<T>();
+	    	  public ECHOList<T> call() throws ECHOException {
 					ECHOException exception = null;
+					ECHOList<T> objList = null;
 					
 					try {
 						JSONObject response = getRequest(instanceId + "/" + resourceType , fParams);
 
 						/* begin copying data */
+						objList = new ECHOList<T>(response.optJSONObject("paginate"));
+						
 						JSONArray items = response.optJSONArray(listKey);
 						if(items == null) throw new ECHOException(0, "Invalid data type for response-field `" + listKey + "`.");
 						
@@ -99,7 +101,7 @@ public class ECHOQuery {
 						// Execute a callback method in the main (UI) thread.
 						if(callback != null) {
 							final ECHOException fException = exception;
-							final List<T> fObjList = objList;
+							final ECHOList<T> fObjList = objList;
 							
 							handler.post(new Runnable() {
 								@Override
@@ -120,7 +122,7 @@ public class ECHOQuery {
 	    	  }
 	    };
         
-	    Future< List<T> > future = executor.submit(communicator);
+	    Future< ECHOList<T> > future = executor.submit(communicator);
 	    
 	    if(sync) {
 		    try {
