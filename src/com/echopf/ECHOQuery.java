@@ -58,20 +58,8 @@ public class ECHOQuery {
 	 * @throws ECHOException
 	 */
 	public static <T extends ECHODataObject<T>> List<T> doFind(final boolean sync, final String listKey, final String resourceType, 
-			final FindCallback<T> callback, final String instanceId, JSONObject params,
+			final FindCallback<T> callback, final String instanceId, final JSONObject fParams,
 			final ECHODataObjectFactory<T> factory) throws ECHOException {
-		
-		// set default params
-		if(params == null) params = new JSONObject();
-		final boolean getall =  (params.optInt("limit") == 0);
-		
-		try {
-			if(getall) params.put("limit", Integer.MAX_VALUE);
-		} catch (JSONException e) {
-			throw new InternalError();
-		} 
-		final JSONObject fParams = params;
-		
 		
 		// Get ready a background thread
 		final Handler handler = new Handler();
@@ -83,50 +71,24 @@ public class ECHOQuery {
 					ECHOException exception = null;
 					
 					try {
-						int currentPageNo = 0, currentPageCount;
+						JSONObject response = getRequest(instanceId + "/" + resourceType , fParams);
+
+						/* begin copying data */
+						JSONArray items = response.optJSONArray(listKey);
+						if(items == null) throw new ECHOException(0, "Invalid data type for response-field `" + listKey + "`.");
 						
-						do {
-							JSONObject response = getRequest(instanceId + "/" + resourceType , fParams);
-
-							/* begin copying data */
-							JSONArray items = response.optJSONArray(listKey);
-							if(items == null) throw new ECHOException(0, "Invalid data type for response-field `" + listKey + "`.");
+						for (int i = 0; i < items.length(); i++) {
+							JSONObject item = items.optJSONObject(i);
+							if(item == null) throw new ECHOException(0, "Invalid data type for response-field `" + listKey + "`.");
 							
-							for (int i = 0; i < items.length(); i++) {
-								JSONObject item = items.optJSONObject(i);
-								if(item == null) throw new ECHOException(0, "Invalid data type for response-field `" + listKey + "`.");
-								
-								String refid = item.optString("refid");
-								if(refid.isEmpty()) continue;
-	
-								T obj = factory.create(instanceId, refid, item);
-								objList.add(obj);
-							}
-							/* end copying data */
+							String refid = item.optString("refid");
+							if(refid.isEmpty()) continue;
 
+							T obj = factory.create(instanceId, refid, item);
+							objList.add(obj);
+						}
+						/* end copying data */
 
-							// begin pagination
-							if(getall == false) break;
-							
-							JSONObject paginate = response.optJSONObject("paginate");
-							if(paginate == null) throw new ECHOException(0, "Invalid data type for response-field `paginate`.");
-							
-							if(currentPageNo+1 != paginate.optInt("page")) throw new ECHOException(0, "Invalid data type for response-field `paginate`.");
-							currentPageNo = paginate.optInt("page");
-							if(currentPageNo == 0) throw new ECHOException(0, "Invalid data type for response-field `paginate`.");
-
-							currentPageCount = paginate.optInt("pageCount");
-							if(currentPageCount == 0) throw new ECHOException(0, "Invalid data type for response-field `paginate`.");
-							
-							if(currentPageNo >= currentPageCount) break;
-							
-							try {
-								fParams.put("page", currentPageNo+1);
-							} catch (JSONException e) {
-								throw new InternalError();
-							}
-
-						} while(true);
 					} catch (ECHOException e) {
 						exception = e;
 					} catch (RuntimeException e) {
