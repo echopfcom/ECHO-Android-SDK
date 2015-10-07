@@ -57,23 +57,25 @@ public class ECHOQuery {
 	 * @param params to control the output objects
 	 * @throws ECHOException
 	 */
-	public static <T extends ECHODataObject<T>> List<T> doFind(final boolean sync, final String listKey, final String resourceType, 
+	public static <T extends ECHODataObject<T>> ECHOArrayList<T> doFind(final boolean sync, final String listKey, final String resourceType, 
 			final FindCallback<T> callback, final String instanceId, final JSONObject fParams,
 			final ECHODataObjectFactory<T> factory) throws ECHOException {
 		
 		// Get ready a background thread
 		final Handler handler = new Handler();
 	    ExecutorService executor = Executors.newSingleThreadExecutor();
-	    Callable<List<T>> communicator = new Callable<List<T>>() {
+	    Callable<ECHOArrayList<T>> communicator = new Callable<ECHOArrayList<T>>() {
 	    	  @Override
-	    	  public List<T> call() throws ECHOException {
-					List<T> objList = new ArrayList<T>();
+	    	  public ECHOArrayList<T> call() throws ECHOException {
 					ECHOException exception = null;
+					ECHOArrayList<T> objList = null;
 					
 					try {
 						JSONObject response = getRequest(instanceId + "/" + resourceType , fParams);
 
 						/* begin copying data */
+						objList = new ECHOArrayList<T>(response.optJSONObject("paginate"));
+						
 						JSONArray items = response.optJSONArray(listKey);
 						if(items == null) throw new ECHOException(0, "The copying data is not acceptable. That is why a records field is not specified.");
 						
@@ -99,7 +101,7 @@ public class ECHOQuery {
 						// Execute a callback method in the main (UI) thread.
 						if(callback != null) {
 							final ECHOException fException = exception;
-							final List<T> fObjList = objList;
+							final ECHOArrayList<T> fObjList = objList;
 							
 							handler.post(new Runnable() {
 								@Override
@@ -120,7 +122,7 @@ public class ECHOQuery {
 	    	  }
 	    };
         
-	    Future< List<T> > future = executor.submit(communicator);
+	    Future< ECHOArrayList<T> > future = executor.submit(communicator);
 	    
 	    if(sync) {
 		    try {

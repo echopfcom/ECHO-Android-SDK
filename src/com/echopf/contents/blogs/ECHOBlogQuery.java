@@ -17,9 +17,6 @@
 package com.echopf.contents.blogs;
 
 import com.echopf.*;
-
-import java.util.List;
-
 import org.json.JSONObject;
 
 
@@ -47,7 +44,7 @@ public class ECHOBlogQuery {
 	 * 		{@.ja <a href="http://echopf.com/docs/restapi/list">リスト制御パラメータ</a>}
 	 * @throws ECHOException 
 	 */
-	public static List<ECHOEntryObject> find(String instanceId, JSONObject params) throws ECHOException {
+	public static ECHOArrayList<ECHOEntryObject> find(String instanceId, JSONObject params) throws ECHOException {
 		return doFind(true, null, instanceId, params);
 	}
 
@@ -84,7 +81,7 @@ public class ECHOBlogQuery {
 	 * @param params to control the output entries by JSONObject
 	 * @throws ECHOException
 	 */
-	protected static List<ECHOEntryObject> doFind(boolean sync, final FindCallback<ECHOEntryObject> callback, 
+	protected static ECHOArrayList<ECHOEntryObject> doFind(boolean sync, final FindCallback<ECHOEntryObject> callback, 
 												final String instanceId, final JSONObject params) throws ECHOException {
 
 		return ECHOQuery.doFind(sync, "entries", "archive", callback, instanceId, params, new ECHODataObjectFactory<ECHOEntryObject>() {

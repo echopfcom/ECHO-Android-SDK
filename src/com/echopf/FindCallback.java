@@ -16,13 +16,11 @@
 
 package com.echopf;
 
-import java.util.List;
-
 
 /**
  * A FindCallback is used to do something after finding objects in a background thread.
  */
-public abstract class FindCallback <T extends ECHOObject> {
+public abstract class FindCallback <T extends ECHODataObject<T>> {
 
 	/**
 	 * {@.en Override this method according desired functions after the finding.
@@ -36,5 +34,5 @@ public abstract class FindCallback <T extends ECHOObject> {
 	 * 		{@.en an exception occurred in the finding, or null if it succeeded.}
 	 * 		{@.ja 検索中に例外が発生した場合のみセットされ、それ以外はnull}
 	 */
-	public abstract void done(List<T> objects, ECHOException e);
+	public abstract void done(ECHOArrayList<T> objects, ECHOException e);
 }

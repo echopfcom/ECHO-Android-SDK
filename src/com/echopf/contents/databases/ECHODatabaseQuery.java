@@ -17,9 +17,6 @@
 package com.echopf.contents.databases;
 
 import com.echopf.*;
-
-import java.util.List;
-
 import org.json.JSONObject;
 
 
@@ -46,7 +43,7 @@ public class ECHODatabaseQuery {
 	 * 		{@.ja <a href="http://echopf.com/docs/restapi/list">リスト制御パラメータ</a>}
 	 * @throws ECHOException 
 	 */
-	public static List<ECHORecordObject> find(String instanceId, JSONObject params) throws ECHOException {
+	public static ECHOArrayList<ECHORecordObject> find(String instanceId, JSONObject params) throws ECHOException {
 		return doFind(true, null, instanceId, params);
 	}
 
@@ -83,7 +80,7 @@ public class ECHODatabaseQuery {
 	 * @param params to control the output records by JSONObject
 	 * @throws ECHOException
 	 */
-	protected static List<ECHORecordObject> doFind(boolean sync, final FindCallback<ECHORecordObject> callback, 
+	protected static ECHOArrayList<ECHORecordObject> doFind(boolean sync, final FindCallback<ECHORecordObject> callback, 
 												final String instanceId, final JSONObject params) throws ECHOException {
 
 		return ECHOQuery.doFind(sync, "records", "archive", callback, instanceId, params, new ECHODataObjectFactory<ECHORecordObject>() {
