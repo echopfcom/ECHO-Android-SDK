@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 
@@ -68,23 +69,26 @@ public class ECHOContentsCategoriesMap extends ECHOTreeMap<ECHOContentsCategoryO
 	 * Constructs a new ECHOContentsCategoriesMap linking a ECHOContentsCategoryObject.
 	 *   based on an existing *entire* one on the remote server.
 	 *   
-	 * @param instanceId : the reference ID of the instance to which the category map has belonged
-	 * @param node : a linking ECHOContentsCategoryObject
+	 * @param instanceId the reference ID of the instance to which the category map has belonged
+	 * @param data a source JSONObject to copy
+	 * @throws ECHOException 
 	 */
-	public ECHOContentsCategoriesMap(String instanceId, ECHOContentsCategoryObject node) {
-		super(instanceId, "categories", node);
+	public ECHOContentsCategoriesMap(String instanceId, JSONObject data) throws ECHOException {
+		super(instanceId, "categories", data);
 	}
 	
 	
 	/**
 	 * Constructs a new ECHOContentsCategoriesMap linking a ECHOContentsCategoryObject
 	 *   based on an existing *sub* one on the remote server.
+	 *
 	 * @param instanceId : the reference ID of the instance to which the category map has belonged
 	 * @param refid the reference ID of the root node of the existing sub one
-	 * @param node : a linking ECHOContentsCategoryObject
+	 * @param data a source JSONObject to copy
+	 * @throws ECHOException 
 	 */
-	public ECHOContentsCategoriesMap(String instanceId, String refid, ECHOContentsCategoryObject node) {
-		super(instanceId, "categories", refid, node);
+	public ECHOContentsCategoriesMap(String instanceId, String refid, JSONObject data) throws ECHOException {
+		super(instanceId, "categories", refid, data);
 	}
 
 	/* End constructors */
@@ -153,15 +157,15 @@ public class ECHOContentsCategoriesMap extends ECHOTreeMap<ECHOContentsCategoryO
 			JSONObject obj = categories.optJSONObject(i);
 			if(obj == null) throw new ECHOException(0, "Invalid data type for data-field `categories`.");
 			
-			JSONArray jsonChildren = obj.optJSONArray("children");
-			
 			String refid = obj.optString("refid");
 			if(refid.isEmpty()) continue;
-
-			ECHOContentsCategoryObject node = new ECHOContentsCategoryObject(instanceId, refid, obj);			
-			ECHOContentsCategoriesMap map = new ECHOContentsCategoriesMap(instanceId, refid, node);
-			
-			map.children = children(jsonChildren);
+		
+			ECHOContentsCategoriesMap map;
+			try {
+				map = new ECHOContentsCategoriesMap(instanceId, refid, new JSONObject("{\"categories\":[" + obj.toString() + "]}"));
+			} catch (JSONException e) {
+				throw new ECHOException(0, "Invalid data type for data-field `categories`");
+			}
 			
 			children.add(map);
 		}
