@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 
@@ -67,23 +68,25 @@ public class ECHOMembersGroupsMap extends ECHOTreeMap<ECHOMembersGroupObject, EC
 	/**
 	 * Constructs a new ECHOMembersGroupsMap linking a ECHOMembersGroupObject
 	 *   based on an existing *entire* one on the ECHO server.
-	 * @param instanceId : the reference ID of the instance to which the group map has belonged
-	 * @param node : a linking ECHOMembersGroupObject
+	 * @param instanceId the reference ID of the instance to which the group map has belonged
+	 * @param data a copying tree map by JSONObject
+	 * @throws ECHOException 
 	 */
-	public ECHOMembersGroupsMap(String instanceId, ECHOMembersGroupObject node) {
-		super(instanceId, "groups", node);
+	public ECHOMembersGroupsMap(String instanceId, JSONObject data) throws ECHOException {
+		super(instanceId, "groups", data);
 	}
 	
 	
 	/**
 	 * Constructs a new ECHOMembersGroupsMap linking a ECHOMembersGroupObject
 	 *   based on an existing *sub* one on the ECHO server.
-	 * @param instanceId : the reference ID of the instance to which the group map has belonged
+	 * @param instanceId the reference ID of the instance to which the group map has belonged
 	 * @param refid the reference ID of the root node of the existing sub one
-	 * @param node : a linking ECHOMembersGroupObject
+	 * @param data a copying tree map by JSONObject
+	 * @throws ECHOException 
 	 */
-	public ECHOMembersGroupsMap(String instanceId, String refid, ECHOMembersGroupObject node) {
-		super(instanceId, "groups", refid, node);
+	public ECHOMembersGroupsMap(String instanceId, String refid, JSONObject data) throws ECHOException {
+		super(instanceId, "groups", refid, data);
 	}
 
 	/* End constructors */
@@ -153,14 +156,15 @@ public class ECHOMembersGroupsMap extends ECHOTreeMap<ECHOMembersGroupObject, EC
 			JSONObject obj = groups.optJSONObject(i);
 			if(obj == null) throw new ECHOException(0, "The copying data is not acceptable.");
 			
-			JSONArray jsonChildren = obj.optJSONArray("children");
-			
 			String refid = obj.optString("refid");
 			if(refid.isEmpty()) throw new ECHOException(0, "The copying data is not acceptable. That is why a refid is not specified.");
 
-			ECHOMembersGroupObject node = new ECHOMembersGroupObject(instanceId, refid, obj);
-			ECHOMembersGroupsMap map = new ECHOMembersGroupsMap(instanceId, refid, node);
-			map.children = children(jsonChildren);
+			ECHOMembersGroupsMap map;
+			try {
+				map = new ECHOMembersGroupsMap(instanceId, refid, new JSONObject("{\"groups\":[" + obj.toString() + "]}"));
+			} catch (JSONException e) {
+				throw new ECHOException(0, "The copying data is not acceptable.");
+			}
 			
 			children.add(map);
 		}
