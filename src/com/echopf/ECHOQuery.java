@@ -400,12 +400,14 @@ public class ECHOQuery {
 											
 									    	String mimeType = URLConnection.guessContentTypeFromName(file.getFileName());
 
+									    	// write header
 									        outputStream.writeBytes(twoHyphens + boundary + lineEnd);
 									        outputStream.writeBytes("Content-Disposition: form-data; name=\"" + name + "\"; filename=\"" + file.getFileName() +"\"" + lineEnd);
 									        outputStream.writeBytes("Content-Type: " + mimeType + lineEnd);
 									        outputStream.writeBytes("Content-Transfer-Encoding: binary" + lineEnd);
 									        outputStream.writeBytes(lineEnd);
-					
+									        
+									        // write content
 									        int bytesAvailable, bufferSize, bytesRead;
 									        do {
 										        bytesAvailable = fileInputStream.available();
@@ -417,8 +419,8 @@ public class ECHOQuery {
 									        	outputStream.write(buffer, 0, bufferSize);
 									        } while(true);
 									        
+									        fileInputStream.close();
 									        outputStream.writeBytes(lineEnd);
-											fileInputStream.close();
 										}
 										
 								    }else if (val instanceof JSONObject) {
@@ -426,18 +428,26 @@ public class ECHOQuery {
 								    	this.post((JSONObject) val, newKeys);
 								    
 								    } else {
-								    	
-								    	// post form-data
-							            outputStream.writeBytes(twoHyphens + boundary + lineEnd);
-							            outputStream.writeBytes("Content-Disposition: form-data; name=\""+ name +"\"" + lineEnd);
-							            outputStream.writeBytes("Content-Type: text/plain" + lineEnd);
-							            outputStream.writeBytes(lineEnd);
-								            
+
+								    	String data2 = null;
 							            try { // in case of boolean
 								            boolean bool = data.getBoolean(key);
-								            outputStream.writeBytes(bool ? "true":"");
+								            data2 = bool ? "true":"";
 							            } catch (JSONException e) { // if the value is not a Boolean or the String "true" or "false".
-								            outputStream.writeBytes(val.toString());
+								            data2 = val.toString().trim();
+							            }
+							            
+							            // write header
+							            outputStream.writeBytes(twoHyphens + boundary + lineEnd);
+							            outputStream.writeBytes("Content-Disposition: form-data; name=\""+ name +"\"" + lineEnd);
+							            outputStream.writeBytes("Content-Type: text/plain; charset=UTF-8" + lineEnd);
+							            outputStream.writeBytes("Content-Length: "+ data2.length() + lineEnd);
+							            outputStream.writeBytes(lineEnd);
+
+							            // write content
+							            byte[] bytes = data2.getBytes();
+							            for (int i=0;i<bytes.length;i++) {
+							            	outputStream.writeByte(bytes[i]);
 							            }
 							            
 							            outputStream.writeBytes(lineEnd);
