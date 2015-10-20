@@ -58,6 +58,7 @@ public class ECHOException extends Exception {
 	public static int INVALID_DATE_STRING_FORMAT = 150090;
 	public static int INVALID_ZIPCODE_FORMAT = 150100;
 	public static int REFERENCE_NOT_EXIST = 150110;
+	public static int INVALID_PREF_FORMAT = 150120;
 
 	/* End error codes */
 	
