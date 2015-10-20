@@ -415,30 +415,55 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 			while (iter.hasNext()) {
 				String key = (String) iter.next();
 				Object elemObj = contentsObj.opt(key);
-				if(elemObj == null) continue;
-				
-				if(elemObj instanceof ECHOFile) { // _type = file
-					this.multipart = true;
-				}else if(elemObj instanceof ECHODataObject) { // _type = instance
-					contentsObj.remove(key);
-					
-					String refid = ((ECHODataObject<?>) elemObj).refid;
 
-					try {
-						if(refid != null) {
-							contentsObj.put(key, refid);
-						}else{
-							JSONObject detail = new JSONObject("{\""+key+"\":{error_code:150110, error_message:\"Reference not exist\"}}");
-							throw new ECHOException(150000, "Validation errors occurred", detail);
+				try {					
+					if(elemObj instanceof JSONArray) { // array field
+						JSONArray array = (JSONArray)elemObj;
+						
+						for (int key2=0; key2<array.length(); key2++) {
+							Object elemArrayObj = array.opt(key2);
+							array.put(key2, convertContentsInBuildRequest(elemArrayObj, key));
 						}
-					} catch (JSONException e) {
-						throw new RuntimeException(e);
+						
+					}else{ // not array field
+						
+						contentsObj.put(key, convertContentsInBuildRequest(elemObj, key));
+						
 					}
+				} catch (JSONException e) {
+					throw new RuntimeException(e);
 				}
 			}
 		}
 		
 		return obj;
+	}
+	
+	private Object convertContentsInBuildRequest(Object elemObj, String key) throws ECHOException {
+	
+		if(elemObj instanceof ECHOFile) { // _type = file
+			
+			// if a local file is set, request by multipart/form-data
+			if(((ECHOFile)elemObj).getLocalBytes() != null) this.multipart = true;
+		
+		}else if(elemObj instanceof ECHODataObject) { // _type = instance
+		
+			String refid = ((ECHODataObject<?>) elemObj).refid;
+			
+			if(refid != null) {
+					return refid;
+			}else{
+				try {
+					JSONObject detail = new JSONObject("{\""+key+"\":{error_code:150110, error_message:\"Reference not exist\"");
+					throw new ECHOException(150000, "Validation errors occurred", detail);
+				} catch (JSONException e) {
+					throw new RuntimeException(e);
+				}
+			}
+			
+		}
+
+		return elemObj;
 	}
 	
 
@@ -456,50 +481,68 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 		Iterator<?> iter = data.keys();
 		while (iter.hasNext()) {
 			String key = (String)iter.next();
-			
-			// acl
-			if(key.equals("acl")) {
-				JSONObject aclObj = data.optJSONObject("acl");
-				if(aclObj == null) throw new ECHOException(0, "The copying data is not acceptable. That is why a acl field is not specified.");
-				this.currentACL = new ECHOACLObject(aclObj);
-				continue;
-				
-			// contents
-			}else if(key.equals("contents")) {
-
-				JSONObject contentsObj = data.optJSONObject("contents");
-				if(contentsObj == null) continue;
-				
-				Iterator<?> iter2 = contentsObj.keys();
-				while (iter2.hasNext()) {
-					String key2 = (String) iter2.next();
-					JSONObject elemObj = contentsObj.optJSONObject(key2);
-					if(elemObj == null) continue;
-					
-					String type = elemObj.optString("_type");
-
-					try {
-						
-						if(type.equals("file")) {
-							contentsObj.put(key2, new ECHOFile(elemObj));
-						} else if (type.equals("instance")) {
-							contentsObj.put(key2, ECHODataObject.factory(elemObj));
-						}
-						
-					} catch (JSONException e) {
-						throw new RuntimeException(e);
-					}
-				}
-			}
 
 			try {
+					
+				// acl
+				if(key.equals("acl")) {
+					JSONObject aclObj = data.optJSONObject("acl");
+					if(aclObj == null) throw new ECHOException(0, "The copying data is not acceptable. That is why a acl field is not specified.");
+					this.currentACL = new ECHOACLObject(aclObj);
+					continue;
+					
+				// contents
+				}else if(key.equals("contents")) {
+	
+					JSONObject contentsObj = data.optJSONObject("contents");
+					if(contentsObj == null) continue;
+					
+					Iterator<?> iter2 = contentsObj.keys();
+					while (iter2.hasNext()) {
+						String key2 = (String) iter2.next();						
+						Object elemObj = contentsObj.opt(key2);
+						if(elemObj == null) continue;
+						
+						if(elemObj instanceof JSONArray) { // array field
+							JSONArray array = (JSONArray)elemObj;
+							
+							for (int key3=0; key3<array.length(); key3++) {
+								Object elemArrayObj = array.opt(key3);
+								array.put(key3, convertContentsInCopyData(elemArrayObj));
+							}
+							
+						}else{ // not array field
+							
+							contentsObj.put(key2, convertContentsInCopyData(elemObj));
+							
+						}
+					}
+				}
+
 				this.data.put(key, data.opt(key));
+				
 			} catch (JSONException e) {
 				throw new RuntimeException(e);
 			}
+			
 		}
 	}
 
+	private Object convertContentsInCopyData(Object elemObj) {
+		
+		if(elemObj instanceof JSONObject) {
+			JSONObject elemJSONObj = (JSONObject)elemObj;
+			String type = elemJSONObj.optString("_type");
+			
+			if(type.equals("file")) { // _type = file
+				return new ECHOFile(elemJSONObj);
+			} else if (type.equals("instance")) { // _type = instance
+				return ECHODataObject.factory(elemJSONObj);
+			}
+		}
+		
+		return elemObj;
+	}
 	
 	
 
