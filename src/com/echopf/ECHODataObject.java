@@ -461,6 +461,11 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 				}
 			}
 			
+		}else if(elemObj instanceof ECHODate) { // _type = date
+			
+			String dateStr = ((ECHODate)elemObj).toStringForECHO();
+			return dateStr;
+			
 		}
 
 		return elemObj;
