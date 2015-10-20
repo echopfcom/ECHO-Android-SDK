@@ -16,6 +16,7 @@
 
 package com.echopf;
 
+import java.text.ParseException;
 import java.util.Iterator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -394,29 +395,28 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 		
 		this.multipart = false; // initialize multipart
 
-		// acl
-		obj.remove("acl");
-		if(newACL != null) {
-			JSONObject ACLObj = newACL.toJSONObject();
+		try {
 			
-			try {
-				obj.put("acl", ACLObj);
-			} catch (JSONException e) {
-				throw new RuntimeException(e);
+			// readonly field
+			obj.remove("created");
+			obj.remove("modified");
+			
+			// acl
+			obj.remove("acl");
+			if(newACL != null) {
+				obj.put("acl", newACL.toJSONObject());
+				newACL = null;
 			}
-			newACL = null;
-		}
-
-		// contents
-		JSONObject contentsObj = obj.optJSONObject("contents");
-		if(contentsObj != null) {
-			Iterator<?> iter = contentsObj.keys();
-			
-			while (iter.hasNext()) {
-				String key = (String) iter.next();
-				Object elemObj = contentsObj.opt(key);
-
-				try {					
+	
+			// contents
+			JSONObject contentsObj = obj.optJSONObject("contents");
+			if(contentsObj != null) {
+				Iterator<?> iter = contentsObj.keys();
+				
+				while (iter.hasNext()) {
+					String key = (String) iter.next();
+					Object elemObj = contentsObj.opt(key);
+				
 					if(elemObj instanceof JSONArray) { // array field
 						JSONArray array = (JSONArray)elemObj;
 						
@@ -430,10 +430,10 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 						contentsObj.put(key, convertContentsInBuildRequest(elemObj, key));
 						
 					}
-				} catch (JSONException e) {
-					throw new RuntimeException(e);
 				}
 			}
+		} catch (JSONException e) {
+			throw new RuntimeException(e);
 		}
 		
 		return obj;
@@ -465,6 +465,10 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 				}
 			}
 			
+		}else if(elemObj instanceof ECHODate) { // _type = date
+			
+			return ((ECHODate)elemObj).toStringForECHO();
+			
 		}
 
 		return elemObj;
@@ -489,9 +493,21 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 			String key = (String)iter.next();
 
 			try {
+				
+				// date
+				if(key.equals("created") || key.equals("modified")) {
+					
+					String date = data.optString(key);
+					if(date == null) throw new ECHOException(0, "Invalid data type for data-field `" + key + "`");
+					try {
+						data.put(key, new ECHODate(date));
+					} catch (ParseException e) {
+						throw new ECHOException(e);
+					}
 					
 				// acl
-				if(key.equals("acl")) {
+				}else if(key.equals("acl")) {
+					
 					JSONObject aclObj = data.optJSONObject("acl");
 					if(aclObj == null) throw new ECHOException(0, "Invalid data type for data-field `acl`");
 					this.currentACL = new ECHOACLObject(aclObj);
@@ -537,6 +553,7 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 	private Object convertContentsInCopyData(Object elemObj) {
 		
 		if(elemObj instanceof JSONObject) {
+		
 			JSONObject elemJSONObj = (JSONObject)elemObj;
 			String type = elemJSONObj.optString("_type");
 			
@@ -545,6 +562,15 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 			} else if (type.equals("instance")) { // _type = instance
 				return ECHODataObject.factory(elemJSONObj);
 			}
+		
+		} else if (elemObj instanceof String && ((String) elemObj).length() == 19) { // (maybe) _type = date
+			
+			try {
+				return new ECHODate((String) elemObj);
+			} catch (ParseException ignored) {
+				// Wrong date string
+			}
+
 		}
 		
 		return elemObj;

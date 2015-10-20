@@ -16,6 +16,8 @@
 
 package com.echopf.members;
 
+import java.text.ParseException;
+
 import com.echopf.*;
 
 import org.json.JSONArray;
@@ -151,6 +153,9 @@ public class ECHOMemberObject extends ECHODataObject<ECHOMemberObject>
 		JSONObject obj = super.buildRequestContents();
 		
 		try {
+
+			// readonly field
+			obj.remove("last_logined");
 			
 			// groups
 			JSONArray sdk_groups = this.optJSONArray("groups");
@@ -182,6 +187,16 @@ public class ECHOMemberObject extends ECHODataObject<ECHOMemberObject>
 		if(data == null) throw new IllegalArgumentException("argument `data` must not be null.");
 
 		try {
+
+			// last_logined
+			String lastLogined = data.optString("last_logined");
+			if(lastLogined != null) {
+				try {
+					data.put("last_logined", new ECHODate(lastLogined));
+				} catch (ParseException e) {
+					throw new ECHOException(e);
+				}
+			}
 			
 			// groups
 			JSONArray api_groups = data.optJSONArray("groups");

@@ -16,8 +16,11 @@
 
 package com.echopf.contents.blogs;
 
+import java.text.ParseException;
+
 import com.echopf.Deletable;
 import com.echopf.DeleteCallback;
+import com.echopf.ECHODate;
 import com.echopf.ECHOException;
 import com.echopf.FetchCallback;
 import com.echopf.Fetchable;
@@ -25,6 +28,7 @@ import com.echopf.PushCallback;
 import com.echopf.Pushable;
 import com.echopf.contents.*;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 
@@ -146,6 +150,46 @@ public class ECHOEntryObject extends ECHOContentsObject<ECHOEntryObject>
 			doDelete(false, callback);
 		} catch (ECHOException e) {
 			throw new InternalError();
+		}
+	}
+
+
+	@Override
+	protected JSONObject buildRequestContents() throws ECHOException {
+		JSONObject obj = super.buildRequestContents();
+		
+		try {
+			
+			// published
+			Object published = obj.opt("published");
+			if(published instanceof ECHODate) obj.put("published", ((ECHODate)published).toStringForECHO());
+			
+		} catch (JSONException e) {
+			throw new RuntimeException(e);
+		}
+
+		return obj;
+	}
+
+
+	@Override
+	protected void copyData(JSONObject data) throws ECHOException {
+		if(data == null) throw new IllegalArgumentException("argument `data` must not be null.");
+
+		try {
+			
+			// published
+			String published = data.optString("published");
+			try {
+				if(published != null) data.put("published", new ECHODate(published));
+			} catch (ParseException e) {
+				throw new ECHOException(e);
+			}
+			
+			super.copyData(data);
+				
+		} catch (JSONException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
