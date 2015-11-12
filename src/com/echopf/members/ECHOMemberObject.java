@@ -149,7 +149,7 @@ public class ECHOMemberObject extends ECHODataObject<ECHOMemberObject>
 
 	
 	@Override
-	protected JSONObject buildRequestContents() throws ECHOException {
+	protected JSONObject buildRequestContents() {
 		JSONObject obj = super.buildRequestContents();
 		
 		try {
@@ -184,40 +184,42 @@ public class ECHOMemberObject extends ECHODataObject<ECHOMemberObject>
 	
 	@Override
 	protected void copyData(JSONObject data) throws ECHOException {
-		if(data == null) throw new IllegalArgumentException("argument `data` must not be null.");
+		super.copyData(data);
 
 		try {
 
 			// last_logined
-			String lastLogined = data.optString("last_logined");
-			if(lastLogined != null) {
-				try {
-					data.put("last_logined", new ECHODate(lastLogined));
-				} catch (ParseException e) {
-					throw new ECHOException(e);
-				}
+			String lastLogined = this.data.optString("last_logined");
+			if(lastLogined == null) throw new ECHOException(0, "Invalid data type for data-field `last_logined`.");
+			try {
+				this.data.put("last_logined", new ECHODate(lastLogined));
+			} catch (ParseException e) {
+				if(!lastLogined.equals("0000-00-00 00:00:00")) throw new ECHOException(e);
 			}
 			
 			// groups
-			JSONArray api_groups = data.optJSONArray("groups");
-			if(api_groups == null) throw new ECHOException(0, "Invalid data type for data-field `groups`.");
-			
-			JSONArray sdk_groups = new JSONArray();
-	
-			for(int i = 0; i < api_groups.length(); i++) {
-				JSONObject group = api_groups.optJSONObject(i);
-				if(group == null) throw new ECHOException(0, "Invalid data type for data-field `groups`.");
+			JSONArray api_groups = this.data.optJSONArray("groups");
+			if (api_groups == null) {
 				
-				String refid = group.optString("refid");
-				if(refid.isEmpty()) continue;
-
-				ECHOMembersGroupObject obj = new ECHOMembersGroupObject(instanceId, refid, group);
-				sdk_groups.put(obj);
+				throw new ECHOException(0, "Invalid data type for data-field `groups`.");
+				
+			} else {
+				
+				JSONArray sdk_groups = new JSONArray();
+				
+				for(int i = 0; i < api_groups.length(); i++) {
+					JSONObject group = api_groups.optJSONObject(i);
+					if(group == null) throw new ECHOException(0, "Invalid data type for data-field `groups`.");
+					
+					String refid = group.optString("refid");
+					if(refid.isEmpty()) continue;
+	
+					ECHOMembersGroupObject obj = new ECHOMembersGroupObject(instanceId, refid, group);
+					sdk_groups.put(obj);
+				}
+				
+				this.data.put("groups", sdk_groups);
 			}
-			data.put("groups", sdk_groups);
-			
-			
-			super.copyData(data);
 				
 		} catch (JSONException e) {
 			throw new RuntimeException(e);

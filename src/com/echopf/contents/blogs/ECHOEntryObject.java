@@ -155,14 +155,16 @@ public class ECHOEntryObject extends ECHOContentsObject<ECHOEntryObject>
 
 
 	@Override
-	protected JSONObject buildRequestContents() throws ECHOException {
+	protected JSONObject buildRequestContents() {
 		JSONObject obj = super.buildRequestContents();
 		
 		try {
 			
 			// published
 			Object published = obj.opt("published");
-			if(published instanceof ECHODate) obj.put("published", ((ECHODate)published).toStringForECHO());
+			if(published instanceof ECHODate) {
+				obj.put("published", ((ECHODate)published).toStringForECHO());
+			}
 			
 		} catch (JSONException e) {
 			throw new RuntimeException(e);
@@ -174,20 +176,19 @@ public class ECHOEntryObject extends ECHOContentsObject<ECHOEntryObject>
 
 	@Override
 	protected void copyData(JSONObject data) throws ECHOException {
-		if(data == null) throw new IllegalArgumentException("argument `data` must not be null.");
+		super.copyData(data);
 
 		try {
 			
 			// published
-			String published = data.optString("published");
+			String published = this.data.optString("published");
+			if(published == null) throw new ECHOException(0, "Invalid data type for data-field `published`.");
 			try {
-				if(published != null) data.put("published", new ECHODate(published));
+				this.data.put("published", new ECHODate(published));
 			} catch (ParseException e) {
 				throw new ECHOException(e);
 			}
 			
-			super.copyData(data);
-				
 		} catch (JSONException e) {
 			throw new RuntimeException(e);
 		}

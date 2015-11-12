@@ -129,20 +129,20 @@ public class ECHOMembersGroupsMap extends ECHOTreeMap<ECHOMembersGroupObject, EC
 		JSONArray groups = data.optJSONArray("groups");
 		if(groups == null) throw new ECHOException(0, "Invalid data type for data-field `groups`.");
 
-			if(is_subtree) {
-				JSONObject obj = groups.optJSONObject(0);
-				if(obj == null) throw new ECHOException(0, "Invalid data type for data-field `groups`.");
-				
-				JSONArray jsonChildren = obj.optJSONArray("children");
-				
-				String refid = obj.optString("refid");
-				if(refid.isEmpty()) return;
-				
-				this.node = new ECHOMembersGroupObject(instanceId, refid, obj);
-				this.children = children(jsonChildren);
-			}else{
-				this.children = children(groups);
-			}
+		if(is_subtree) {
+			JSONObject obj = groups.optJSONObject(0);
+			if(obj == null) throw new ECHOException(0, "Invalid data type for data-field `groups`.");
+			
+			JSONArray jsonChildren = obj.optJSONArray("children");
+			
+			String refid = obj.optString("refid");
+			if(refid.isEmpty()) return;
+			
+			this.node = new ECHOMembersGroupObject(instanceId, refid, obj);
+			this.children = children(jsonChildren);
+		}else{
+			this.children = children(groups);
+		}
 	}
 	
 

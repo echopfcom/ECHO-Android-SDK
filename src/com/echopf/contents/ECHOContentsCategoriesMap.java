@@ -128,19 +128,19 @@ public class ECHOContentsCategoriesMap extends ECHOTreeMap<ECHOContentsCategoryO
 		JSONArray categories = data.optJSONArray("categories");
 		if(categories == null) throw new ECHOException(0, "Invalid data type for data-field `categories`.");
 
-			if(is_subtree) {
-				JSONObject obj = categories.optJSONObject(0);
-				if(obj == null) throw new ECHOException(0, "Invalid data type for data-field `categories`.");
-				JSONArray jsonChildren = obj.optJSONArray("children");
+		if(is_subtree) {
+			JSONObject obj = categories.optJSONObject(0);
+			if(obj == null) throw new ECHOException(0, "Invalid data type for data-field `categories`.");
+			JSONArray jsonChildren = obj.optJSONArray("children");
 
-				String refid = obj.optString("refid");
-				if(refid.isEmpty()) return;
-				
-				this.node = new ECHOContentsCategoryObject(instanceId, refid, obj);
-				this.children = children(jsonChildren);
-			}else{
-				this.children = children(categories);
-			}
+			String refid = obj.optString("refid");
+			if(refid.isEmpty()) return;
+			
+			this.node = new ECHOContentsCategoryObject(instanceId, refid, obj);
+			this.children = children(jsonChildren);
+		}else{
+			this.children = children(categories);
+		}
 	}
 	
 
@@ -164,7 +164,7 @@ public class ECHOContentsCategoriesMap extends ECHOTreeMap<ECHOContentsCategoryO
 			try {
 				map = new ECHOContentsCategoriesMap(instanceId, refid, new JSONObject("{\"categories\":[" + obj.toString() + "]}"));
 			} catch (JSONException e) {
-				throw new ECHOException(0, "Invalid data type for data-field `categories`");
+				throw new ECHOException(0, "Invalid data type for data-field `categories`.");
 			}
 			
 			children.add(map);

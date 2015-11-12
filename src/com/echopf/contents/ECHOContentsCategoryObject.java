@@ -158,11 +158,13 @@ public class ECHOContentsCategoryObject extends ECHODataObject<ECHOContentsCateg
 
 	
 	@Override
-	protected JSONObject buildRequestContents() throws ECHOException {
+	protected JSONObject buildRequestContents() {
 		JSONObject obj = super.buildRequestContents();
 		
 		try {
 			
+			// parent_refid
+			obj.remove("parent_refid");
 			if(this.newParent != null) {
 				String new_parent_refid = this.newParent.getRefid();
 				
@@ -183,7 +185,6 @@ public class ECHOContentsCategoryObject extends ECHODataObject<ECHOContentsCateg
 	@Override
 	protected void copyData(JSONObject data) throws ECHOException {
 		if(data == null) throw new IllegalArgumentException("argument `data` must not be null.");
-
 		JSONArray categories = data.optJSONArray("categories");
 		
 		JSONObject category = null;
@@ -194,8 +195,8 @@ public class ECHOContentsCategoryObject extends ECHODataObject<ECHOContentsCateg
 		}
 		
 		if(category == null) throw new ECHOException(0, "Invalid data type for data-field `categories`.");
-		
 		category.remove("children");
+		
 		super.copyData(category);
 	}
 }

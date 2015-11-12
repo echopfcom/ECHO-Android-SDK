@@ -73,15 +73,15 @@ public abstract class ECHOContentsObject<S extends ECHOContentsObject<S>> extend
 	
 
 	@Override
-	protected JSONObject buildRequestContents() throws ECHOException {
+	protected JSONObject buildRequestContents() {
 		JSONObject obj = super.buildRequestContents();
 		
 		try {
 			
 			// categories
 			JSONArray sdk_categories = obj.optJSONArray("categories");
-			
 			if(sdk_categories != null) {
+				
 				JSONArray api_categories = new JSONArray();
 				
 				for (int i = 0; i < sdk_categories.length(); i++) {
@@ -104,29 +104,34 @@ public abstract class ECHOContentsObject<S extends ECHOContentsObject<S>> extend
 
 	@Override
 	protected void copyData(JSONObject data) throws ECHOException {
-		if(data == null) throw new IllegalArgumentException("argument `data` must not be null.");
-
+		super.copyData(data);
+		
 		try {
+			
 			// categories
-			JSONArray api_categories = data.optJSONArray("categories");
-			if(api_categories == null) throw new ECHOException(0, "Invalid data type for data-field `categories`.");
-			
-			JSONArray sdk_categories = new JSONArray();
-			for(int i = 0; i < api_categories.length(); i++) {
-				JSONObject category = api_categories.optJSONObject(i);
-				if(category == null) throw new ECHOException(0, "Invalid data type for data-field `categories`.");
+			JSONArray api_categories = this.data.optJSONArray("categories");
+			if (api_categories == null) {
 				
-				String refid = category.optString("refid");
-				if(refid.isEmpty()) continue;
+				throw new ECHOException(0, "Invalid data type for data-field `categories`.");
+			
+			} else {
+				
+				JSONArray sdk_categories = new JSONArray();
+				
+				for(int i = 0; i < api_categories.length(); i++) {
+					JSONObject category = api_categories.optJSONObject(i);
+					if(category == null) throw new ECHOException(0, "Invalid data type for data-field `categories`.");
+					
+					String refid = category.optString("refid");
+					if(refid.isEmpty()) continue;
 
-				ECHOContentsCategoryObject obj = new ECHOContentsCategoryObject(instanceId, refid, category);
-				sdk_categories.put(obj);
-			}
-			data.put("categories", sdk_categories);
-			
-			
-			super.copyData(data);
+					ECHOContentsCategoryObject obj = new ECHOContentsCategoryObject(instanceId, refid, category);
+					sdk_categories.put(obj);
+				}
 				
+				this.data.put("categories", sdk_categories);
+			}
+			
 		} catch (JSONException e) {
 			throw new RuntimeException(e);
 		}

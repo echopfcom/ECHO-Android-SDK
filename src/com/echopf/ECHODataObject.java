@@ -41,7 +41,7 @@ import android.os.Handler;
  */
 public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOObject {
 	
-	private JSONObject data = null;
+	protected JSONObject data = null;
 	private ECHOACLObject newACL = null;
 	private ECHOACLObject currentACL = null;
 	private Boolean multipart = null;
@@ -388,9 +388,8 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 
 	/**
 	 * Build a request contents object.
-	 * @throws ECHOException 
 	 */
-	protected JSONObject buildRequestContents() throws ECHOException {
+	protected JSONObject buildRequestContents() {
 		JSONObject obj = this.cloneData();
 		
 		this.multipart = false; // initialize multipart
@@ -432,6 +431,7 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 					}
 				}
 			}
+			
 		} catch (JSONException e) {
 			throw new RuntimeException(e);
 		}
@@ -439,7 +439,7 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 		return obj;
 	}
 	
-	private Object convertContentsInBuildRequest(Object elemObj, String key) throws ECHOException {
+	private Object convertContentsInBuildRequest(Object elemObj, String key) {
 	
 		if(elemObj instanceof ECHOFile) { // _type = file
 			
@@ -453,17 +453,7 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 		}else if(elemObj instanceof ECHODataObject) { // _type = instance
 		
 			String refid = ((ECHODataObject<?>) elemObj).refid;
-			
-			if(refid != null) {
-					return refid;
-			}else{
-				try {
-					JSONObject detail = new JSONObject("{\""+key+"\":{error_code:150110, error_message:\"Reference not exist\"");
-					throw new ECHOException(150000, "Validation errors occurred", detail);
-				} catch (JSONException e) {
-					throw new RuntimeException(e);
-				}
-			}
+			return (refid.isEmpty()) ? JSONObject.NULL : refid;
 			
 		}else if(elemObj instanceof ECHODate) { // _type = date
 			
@@ -498,7 +488,7 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 				if(key.equals("created") || key.equals("modified")) {
 					
 					String date = data.optString(key);
-					if(date == null) throw new ECHOException(0, "Invalid data type for data-field `" + key + "`");
+					if(date == null) throw new ECHOException(0, "Invalid data type for data-field `" + key + "`.");
 					try {
 						data.put(key, new ECHODate(date));
 					} catch (ParseException e) {
@@ -509,7 +499,7 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 				}else if(key.equals("acl")) {
 					
 					JSONObject aclObj = data.optJSONObject("acl");
-					if(aclObj == null) throw new ECHOException(0, "Invalid data type for data-field `acl`");
+					if(aclObj == null) throw new ECHOException(0, "Invalid data type for data-field `acl`.");
 					this.currentACL = new ECHOACLObject(aclObj);
 					continue;
 					
@@ -517,7 +507,7 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 				}else if(key.equals("contents")) {
 	
 					JSONObject contentsObj = data.optJSONObject("contents");
-					if(contentsObj == null) throw new ECHOException(0, "Invalid data type for data-field `contents`");
+					if(contentsObj == null) throw new ECHOException(0, "Invalid data type for data-field `contents`.");
 					
 					Iterator<?> iter2 = contentsObj.keys();
 					while (iter2.hasNext()) {
