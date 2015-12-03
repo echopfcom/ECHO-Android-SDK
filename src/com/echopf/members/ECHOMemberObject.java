@@ -174,6 +174,12 @@ public class ECHOMemberObject extends ECHODataObject<ECHOMemberObject>
 				obj.put("groups", api_groups);
 			}
 			
+			// installation
+			Object sdk_installation = this.opt("installation");
+			if(sdk_installation instanceof ECHOInstallation) {
+				obj.put("installation", ((ECHOInstallation) sdk_installation).toJSONObject());
+			}
+			
 		} catch (JSONException e) {
 			throw new RuntimeException(e);
 		}
@@ -219,6 +225,18 @@ public class ECHOMemberObject extends ECHODataObject<ECHOMemberObject>
 				}
 				
 				this.data.put("groups", sdk_groups);
+			}
+			
+			// installation
+			JSONObject api_installation = this.data.optJSONObject("installation");
+			if(api_installation != null) {
+				ECHOInstallation sdk_installation = null;
+				try {
+					sdk_installation = new ECHOInstallation(api_installation);
+					this.data.put("installation", sdk_installation);
+				} catch (IllegalStateException ignored) {
+					this.data.remove("installation");
+				}
 			}
 				
 		} catch (JSONException e) {

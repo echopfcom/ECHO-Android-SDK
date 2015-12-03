@@ -21,52 +21,52 @@ import org.json.JSONObject;
 
 
 /**
- * {@.en An ECHOMailmagObject is a e-mail magazine object.}
- * {@.ja メールマガジンオブジェクト。}
+ * {@.en An ECHOPushNotificationObject is a push notification object.}
+ * {@.ja プッシュ通知オブジェクト。}
  */
-public class ECHOMailmagObject extends ECHODistributedObject<ECHOMailmagObject>
-								implements  Fetchable<ECHOMailmagObject>, 
-											Pushable<ECHOMailmagObject>, 
-											Deletable<ECHOMailmagObject> {
+public class ECHOPushNotificationObject extends ECHODistributedObject<ECHOPushNotificationObject>
+								implements  Fetchable<ECHOPushNotificationObject>, 
+											Pushable<ECHOPushNotificationObject>, 
+											Deletable<ECHOPushNotificationObject> {
 
 	/* Begin constructors */
 
 	/**
-	 * {@.en Constructs a new ECHOMailmagObject.}
-	 * {@.ja 新しいメールマガジンとしてオブジェクトを生成します。}
+	 * {@.en Constructs a new ECHOPushNotificationObject.}
+	 * {@.ja 新しいプッシュ通知としてオブジェクトを生成します。}
 	 * 
 	 * @param instanceId
 	 * 		{@.en the reference ID of a member instance}
 	 * 		{@.ja メンバーインスタンスID}
 	 */
-	public ECHOMailmagObject(String instanceId) {
-		super(instanceId, "mailmag");
+	public ECHOPushNotificationObject(String instanceId) {
+		super(instanceId, "push_notification");
 	}
 	
 	
 	/**
-	 * {@.en Constructs a new ECHOMailmagObject based on an existing one on the remote server.}
-	 * {@.ja 既存のメールマガジンとしてオブジェクトを生成します。}
+	 * {@.en Constructs a new ECHOPushNotificationObject based on an existing one on the remote server.}
+	 * {@.ja 既存のプッシュ通知としてオブジェクトを生成します。}
 	 * 
 	 * @param instanceId
 	 * 		{@.en the reference ID of a member instance}
 	 * 		{@.ja　メンバーインスタンスID}
 	 * @param refid
 	 * 		{@.en the reference ID of the existing one}
-	 * 		{@.ja 既存メールマガジンのID}
+	 * 		{@.ja 既存プッシュ通知のID}
 	 */
-	public ECHOMailmagObject(String instanceId, String refid) {
-		super(instanceId, "mailmag", refid);
+	public ECHOPushNotificationObject(String instanceId, String refid) {
+		super(instanceId, "push_notification", refid);
 	}
 
 	
 	/**
-	 * Constructs a new ECHOMailmagObject based on an existing one on the remote server.
+	 * Constructs a new ECHOPushNotificationObject based on an existing one on the remote server.
 	 * @param instanceId the reference ID of a member instance
 	 * @param refid the reference ID of the existing one
 	 * @param data a source JSONObject to copy
 	 */
-	public ECHOMailmagObject(String instanceId, String refid, JSONObject data) throws ECHOException {
+	public ECHOPushNotificationObject(String instanceId, String refid, JSONObject data) throws ECHOException {
 		this(instanceId, refid);
 		copyData(data);
 	}
@@ -78,7 +78,7 @@ public class ECHOMailmagObject extends ECHODistributedObject<ECHOMailmagObject>
 	 * Implement a Fetchable
 	 * @see com.echopf.Fetchable#fetch()
 	 */
-	public ECHOMailmagObject fetch() throws ECHOException {
+	public ECHOPushNotificationObject fetch() throws ECHOException {
 		doFetch(true, null);
 		return this;
 	}
@@ -88,7 +88,7 @@ public class ECHOMailmagObject extends ECHODistributedObject<ECHOMailmagObject>
 	 * Implement a Fetchable
 	 * @see com.echopf.Fetchable#fetchInBackground()
 	 */
-	public void fetchInBackground(FetchCallback<ECHOMailmagObject> callback) {
+	public void fetchInBackground(FetchCallback<ECHOPushNotificationObject> callback) {
 		try {
 			doFetch(false, callback);
 		} catch (ECHOException e) {
@@ -101,7 +101,7 @@ public class ECHOMailmagObject extends ECHODistributedObject<ECHOMailmagObject>
 	 * Implement a Pushable
 	 * @see com.echopf.Pushable#push()
 	 */
-	public ECHOMailmagObject push() throws ECHOException {
+	public ECHOPushNotificationObject push() throws ECHOException {
 		doPush(true, null);
 		return this;
 	}
@@ -111,7 +111,7 @@ public class ECHOMailmagObject extends ECHODistributedObject<ECHOMailmagObject>
 	 * Implement a Pushable
 	 * @see com.echopf.Pushable#pushInBackground()
 	 */
-	public void pushInBackground(PushCallback<ECHOMailmagObject> callback) {
+	public void pushInBackground(PushCallback<ECHOPushNotificationObject> callback) {
 		try {
 			doPush(false, callback);
 		} catch (ECHOException e) {
@@ -124,7 +124,7 @@ public class ECHOMailmagObject extends ECHODistributedObject<ECHOMailmagObject>
 	 * Implement a Deletebale
 	 * @see com.echopf.Deletebale#delete()
 	 */
-	public ECHOMailmagObject delete() throws ECHOException {
+	public ECHOPushNotificationObject delete() throws ECHOException {
 		doDelete(true, null);
 		return this;
 	}
@@ -134,7 +134,7 @@ public class ECHOMailmagObject extends ECHODistributedObject<ECHOMailmagObject>
 	 * Implement a Deletebale
 	 * @see com.echopf.Deletebale#deleteInBackground()
 	 */
-	public void deleteInBackground(DeleteCallback<ECHOMailmagObject> callback) {
+	public void deleteInBackground(DeleteCallback<ECHOPushNotificationObject> callback) {
 		try {
 			doDelete(false, callback);
 		} catch (ECHOException e) {
