@@ -143,6 +143,8 @@ public abstract class ECHOTreeMap<T extends ECHODataObject<T> & TreeNodeable<T>,
 					
 				} catch(ECHOException e) {
 					exception = e;
+				} catch (Exception e) {
+					exception = new ECHOException(e);
 				}
 				
 				

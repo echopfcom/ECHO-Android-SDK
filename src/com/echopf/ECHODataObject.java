@@ -146,7 +146,9 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
     	    		
     			} catch(ECHOException e) {
     				exception = e;
-    			}
+				} catch (Exception e) {
+					exception = new ECHOException(e);
+				}
 
     			
     			if(sync == false) {
@@ -242,6 +244,8 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 		    		
 				} catch (ECHOException e) {
 					exception = e;
+				} catch (Exception e) {
+					exception = new ECHOException(e);
 				}
 				
 				
@@ -321,6 +325,8 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 					
 				} catch(ECHOException e) {
 					exception = e;
+				} catch (Exception e) {
+					exception = new ECHOException(e);
 				}
 
 				

@@ -182,7 +182,7 @@ public class ECHOInstallation {
     	    		synchronized (lock) {
     	    			deviceToken = token;
     	    		}
-				} catch (IOException e) {
+				} catch (Exception e) {
 					exception = new ECHOException(e);
 				}
 			

@@ -93,7 +93,7 @@ public class ECHOQuery {
 
 					} catch (ECHOException e) {
 						exception = e;
-					} catch (RuntimeException e) {
+					} catch (Exception e) {
 						exception = new ECHOException(e);
 					}
 					
@@ -252,7 +252,6 @@ public class ECHOQuery {
 	 * @throws ECHOException
 	 */
 	public static JSONObject request(String path, String httpMethod, JSONObject data, boolean multipart) throws ECHOException  {
-		
 		final String secureDomain = ECHO.secureDomain;
 		if(secureDomain == null) throw new IllegalStateException("The SDK is not initialized.　Please call `ECHO.initialize()`.");
 
@@ -282,7 +281,6 @@ public class ECHOQuery {
 		JSONObject response = null;
 
 		try {
-			
 			URL urlConn = new URL(url.toString());
 			httpClient = (HttpsURLConnection) urlConn.openConnection();
 			
@@ -314,7 +312,7 @@ public class ECHOQuery {
 		final String appId = ECHO.appId;
 		final String appKey = ECHO.appKey;
 		final String accessToken = ECHO.accessToken;
-		
+
 		if(appId == null || appKey == null) throw new IllegalStateException("The SDK is not initialized.　Please call `ECHO.initialize()`.");
 
 		InputStream responseInputStream = null;
