@@ -71,7 +71,7 @@ public class ECHOMembersGroupsMap extends ECHOTreeMap<ECHOMembersGroupObject, EC
 	 * @param instanceId : the reference ID of the instance to which the group map has belonged
 	 * @param data a source JSONObject to copy
 	 */
-	public ECHOMembersGroupsMap(String instanceId, JSONObject data) throws ECHOException {
+	public ECHOMembersGroupsMap(String instanceId, JSONObject data) {
 		super(instanceId, "groups", data);
 	}
 	
@@ -83,9 +83,8 @@ public class ECHOMembersGroupsMap extends ECHOTreeMap<ECHOMembersGroupObject, EC
 	 * @param instanceId : the reference ID of the instance to which the group map has belonged
 	 * @param refid the reference ID of the root node of the existing sub one
 	 * @param data a source JSONObject to copy
-	 * @throws ECHOException 
 	 */
-	public ECHOMembersGroupsMap(String instanceId, String refid, JSONObject data) throws ECHOException {
+	public ECHOMembersGroupsMap(String instanceId, String refid, JSONObject data) {
 		super(instanceId, "groups", refid, data);
 	}
 
@@ -119,57 +118,55 @@ public class ECHOMembersGroupsMap extends ECHOTreeMap<ECHOMembersGroupObject, EC
 	/**
 	 * Copies data from a JSONObject
 	 *
-	 * @param data the source JSONObject
-	 * @throws ECHOException 
+	 * @param source the source JSONObject
 	 */
 	@Override
-	protected void copyData(JSONObject data) throws ECHOException {
-		if(data == null) throw new IllegalArgumentException("argument `data` must not be null.");
+	protected void copyData(JSONObject source) {
+		if(source == null) throw new IllegalArgumentException("Argument `source` must not be null.");
 
-		JSONArray groups = data.optJSONArray("groups");
-		if(groups == null) throw new ECHOException(0, "Invalid data type for data-field `groups`.");
+		JSONArray groups = source.optJSONArray("groups");
+		if(groups != null) {
 
-		if(is_subtree) {
-			JSONObject obj = groups.optJSONObject(0);
-			if(obj == null) throw new ECHOException(0, "Invalid data type for data-field `groups`.");
-			
-			JSONArray jsonChildren = obj.optJSONArray("children");
-			
-			String refid = obj.optString("refid");
-			if(refid.isEmpty()) return;
-			
-			this.node = new ECHOMembersGroupObject(instanceId, refid, obj);
-			this.children = children(jsonChildren);
-		}else{
-			this.children = children(groups);
+			if (is_subtree) {
+				JSONObject obj = groups.optJSONObject(0);
+				if (obj == null) return; // skip
+
+				JSONArray jsonChildren = obj.optJSONArray("children");
+
+				String refid = obj.optString("refid");
+				if (refid.isEmpty()) return; // skip
+
+				this.node = new ECHOMembersGroupObject(instanceId, refid, obj);
+				this.children = children(jsonChildren);
+			} else {
+				this.children = children(groups);
+			}
+
 		}
 	}
 	
 
 	/**
 	 * Builds children recursively
-	 * @throws ECHOException 
 	 */
-	private List<ECHOMembersGroupsMap> children(JSONArray groups) throws ECHOException {
+	private List<ECHOMembersGroupsMap> children(JSONArray source) {
 		List<ECHOMembersGroupsMap> children = new ArrayList<ECHOMembersGroupsMap>();
 		
-		if(groups == null || groups.length() == 0) return children;
+		if(source == null || source.length() == 0) return children;
 		
-		for(int i = 0; i < groups.length(); i++) {
-			JSONObject obj = groups.optJSONObject(i);
-			if(obj == null) throw new ECHOException(0, "Invalid data type for data-field `groups`.");
+		for(int i = 0; i < source.length(); i++) {
+			JSONObject obj = source.optJSONObject(i);
+			if(obj == null) continue; // skip
 			
 			String refid = obj.optString("refid");
-			if(refid.isEmpty()) continue;
+			if(refid.isEmpty()) continue; // skip
 
-			ECHOMembersGroupsMap map;
 			try {
-				map = new ECHOMembersGroupsMap(instanceId, refid, new JSONObject("{\"groups\":[" + obj.toString() + "]}"));
-			} catch (JSONException e) {
-				throw new ECHOException(0, "Invalid data type for data-field `groups`.");
+				ECHOMembersGroupsMap map = new ECHOMembersGroupsMap(instanceId, refid, new JSONObject("{\"groups\":[" + obj.toString() + "]}"));
+				children.add(map);
+			} catch (JSONException ignored) {
+				// skip
 			}
-			
-			children.add(map);
 		}
 		
 		return children;

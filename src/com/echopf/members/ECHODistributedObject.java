@@ -168,8 +168,8 @@ public abstract class ECHODistributedObject<S extends ECHODistributedObject<S>> 
 			
 			// distributed
 			Object date = this.opt("distributed");
-			if(date instanceof ECHODate) {
-				obj.put("distributed", ((ECHODate)date).toStringForECHO());
+			if (date instanceof ECHODate) {
+				obj.put("distributed", ((ECHODate) date).toStringForECHO());
 			}
 			
 			// target
@@ -250,27 +250,24 @@ public abstract class ECHODistributedObject<S extends ECHODistributedObject<S>> 
 	
 	
 	@Override
-	protected void copyData(JSONObject data) throws ECHOException {
-		super.copyData(data);
+	protected void copyData(JSONObject source) {
+		if(source == null) throw new IllegalArgumentException("Argument `source` must not be null.");
 
 		try {
 			
 			// distributed
-			String distributed = this.data.optString("distributed");
-			if(distributed == null) throw new ECHOException(0, "Invalid data type for data-field `distributed`.");
-			try {
-				this.data.put("distributed", new ECHODate(distributed));
-			} catch (ParseException e) {
-				 throw new ECHOException(e);
+			String distributed = source.optString("distributed");
+			if(distributed != null) {
+				try {
+					source.put("distributed", new ECHODate(distributed));
+				} catch (ParseException ignored) {
+					// skip
+				}
 			}
 			
 			// target
-			JSONObject apiTarget = this.data.optJSONObject("target");
-			if (apiTarget == null) {
-				
-				throw new ECHOException(0, "Invalid data type for data-field `target`.");
-				
-			} else {
+			JSONObject apiTarget = source.optJSONObject("target");
+			if (apiTarget != null) {
 				JSONObject sdkTarget = new JSONObject();
 	
 				// members
@@ -327,11 +324,15 @@ public abstract class ECHODistributedObject<S extends ECHODistributedObject<S>> 
 					}
 				}
 				
-				this.data.put("target", sdkTarget);
+				source.put("target", sdkTarget);
 			}
 		
 		} catch (JSONException e) {
 			throw new RuntimeException(e);
 		}
+
+
+		// super
+		super.copyData(source);
 	}
 }

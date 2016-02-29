@@ -69,11 +69,11 @@ public class ECHOMemberObject extends ECHODataObject<ECHOMemberObject>
 	 * Constructs a new ECHOMemberObject based on an existing one on the remote server.
 	 * @param instanceId the reference ID of the instance to which this object has belonged
 	 * @param refid the reference ID of the existing one
-	 * @param data a source JSONObject to copy
+	 * @param source a source JSONObject to copy
 	 */
-	public ECHOMemberObject(String instanceId, String refid, JSONObject data) throws ECHOException {
+	public ECHOMemberObject(String instanceId, String refid, JSONObject source) {
 		this(instanceId, refid);
-		copyData(data);
+		copyData(source);
 	}
 
 	/* End constructors */
@@ -189,58 +189,57 @@ public class ECHOMemberObject extends ECHODataObject<ECHOMemberObject>
 	
 	
 	@Override
-	protected void copyData(JSONObject data) throws ECHOException {
-		super.copyData(data);
+	protected void copyData(JSONObject source) {
+		if(source == null) throw new IllegalArgumentException("Argument `source` must not be null.");
 
 		try {
 
 			// last_logined
-			String lastLogined = this.data.optString("last_logined");
-			if(lastLogined == null) throw new ECHOException(0, "Invalid data type for data-field `last_logined`.");
-			try {
-				this.data.put("last_logined", new ECHODate(lastLogined));
-			} catch (ParseException e) {
-				if(!lastLogined.equals("0000-00-00 00:00:00")) throw new ECHOException(e);
+			String lastLogined = source.optString("last_logined");
+			if(lastLogined != null) {
+				try {
+					source.put("last_logined", new ECHODate(lastLogined));
+				} catch (ParseException ignored) {
+					// skip
+				}
 			}
 			
 			// groups
-			JSONArray api_groups = this.data.optJSONArray("groups");
-			if (api_groups == null) {
-				
-				throw new ECHOException(0, "Invalid data type for data-field `groups`.");
-				
-			} else {
-				
+			JSONArray api_groups = source.optJSONArray("groups");
+			if (api_groups != null) {
 				JSONArray sdk_groups = new JSONArray();
 				
 				for(int i = 0; i < api_groups.length(); i++) {
 					JSONObject group = api_groups.optJSONObject(i);
-					if(group == null) throw new ECHOException(0, "Invalid data type for data-field `groups`.");
+					if(group == null) continue; // skip
 					
 					String refid = group.optString("refid");
-					if(refid.isEmpty()) continue;
-	
+					if(refid.isEmpty()) continue; // skip
+
 					ECHOMembersGroupObject obj = new ECHOMembersGroupObject(instanceId, refid, group);
 					sdk_groups.put(obj);
 				}
 				
-				this.data.put("groups", sdk_groups);
+				source.put("groups", sdk_groups);
 			}
 			
 			// installation
-			JSONObject api_installation = this.data.optJSONObject("installation");
+			JSONObject api_installation = source.optJSONObject("installation");
 			if(api_installation != null) {
-				ECHOInstallation sdk_installation = null;
 				try {
-					sdk_installation = new ECHOInstallation(api_installation);
-					this.data.put("installation", sdk_installation);
+					ECHOInstallation sdk_installation = new ECHOInstallation(api_installation);
+					source.put("installation", sdk_installation);
 				} catch (IllegalStateException ignored) {
-					this.data.remove("installation");
+					// skip
 				}
 			}
 				
 		} catch (JSONException e) {
 			throw new RuntimeException(e);
 		}
+
+
+		// super
+		super.copyData(source);
 	}
 }

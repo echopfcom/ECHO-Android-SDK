@@ -78,7 +78,7 @@ public class ECHOEntryObject extends ECHOContentsObject<ECHOEntryObject>
 	 * @param refid the reference ID of the existing one
 	 * @param data : a source JSONObject to copy
 	 */
-	public ECHOEntryObject(String instanceId, String refid, JSONObject data) throws ECHOException {
+	public ECHOEntryObject(String instanceId, String refid, JSONObject data) {
 		super(instanceId, "entry", refid, data);
 	}
 	
@@ -175,23 +175,27 @@ public class ECHOEntryObject extends ECHOContentsObject<ECHOEntryObject>
 
 
 	@Override
-	protected void copyData(JSONObject data) throws ECHOException {
-		super.copyData(data);
+	protected void copyData(JSONObject source) {
+		if(source == null) throw new IllegalArgumentException("Argument `source` must not be null.");
 
 		try {
 			
 			// published
-			String published = this.data.optString("published");
-			if(published == null) throw new ECHOException(0, "Invalid data type for data-field `published`.");
-			try {
-				this.data.put("published", new ECHODate(published));
-			} catch (ParseException e) {
-				throw new ECHOException(e);
+			String published = source.optString("published");
+			if(published != null) {
+				try {
+					source.put("published", new ECHODate(published));
+				} catch (ParseException ignored) {
+					// skip
+				}
 			}
 			
 		} catch (JSONException e) {
 			throw new RuntimeException(e);
 		}
+
+		// super
+		super.copyData(source);
 	}
 
 }

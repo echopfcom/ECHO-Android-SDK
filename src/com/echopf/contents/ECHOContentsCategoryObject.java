@@ -69,11 +69,11 @@ public class ECHOContentsCategoryObject extends ECHODataObject<ECHOContentsCateg
 	 * Constructs a new ECHOContentsCategoryObject based on an existing one on the remote server.
 	 * @param instanceId the reference ID of the instance to which this object has belonged
 	 * @param refid the reference ID of the existing one
-	 * @param data : a source JSONObject to copy
+	 * @param source : a source JSONObject to copy
 	 */
-	public ECHOContentsCategoryObject(String instanceId, String refid, JSONObject data) throws ECHOException {
+	public ECHOContentsCategoryObject(String instanceId, String refid, JSONObject source) {
 		this(instanceId, refid);
-		copyData(data);
+		copyData(source);
 	}
 
 	/* End constructors */
@@ -183,20 +183,23 @@ public class ECHOContentsCategoryObject extends ECHODataObject<ECHOContentsCateg
 
 	
 	@Override
-	protected void copyData(JSONObject data) throws ECHOException {
-		if(data == null) throw new IllegalArgumentException("argument `data` must not be null.");
-		JSONArray categories = data.optJSONArray("categories");
+	protected void copyData(JSONObject source) {
+		if(source == null) throw new IllegalArgumentException("Argument `source` must not be null.");
+
+		JSONArray categories = source.optJSONArray("categories");
 		
 		JSONObject category = null;
 		if(categories != null) { // if the data is a tree format
 			category = categories.optJSONObject(0);
 		}else{ // the data is a category object
-			category = data;
+			category = source;
 		}
 		
-		if(category == null) throw new ECHOException(0, "Invalid data type for data-field `categories`.");
-		category.remove("children");
-		
+		if(category == null) return; //skip
+
+		category.remove("children"); // remove children
+
+		// super
 		super.copyData(category);
 	}
 }

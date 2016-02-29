@@ -396,56 +396,76 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 	 * Build a request contents object.
 	 */
 	protected JSONObject buildRequestContents() {
-		JSONObject obj = this.cloneData();
-		
+		JSONObject obj = new JSONObject();
+
 		this.multipart = false; // initialize multipart
 
 		try {
-			
-			// readonly field
-			obj.remove("created");
-			obj.remove("modified");
-			
+
 			// acl
-			obj.remove("acl");
 			if(newACL != null) {
+				System.out.println(newACL.toJSONObject());
 				obj.put("acl", newACL.toJSONObject());
 				newACL = null;
 			}
-	
-			// contents
-			JSONObject contentsObj = obj.optJSONObject("contents");
-			if(contentsObj != null) {
-				Iterator<?> iter = contentsObj.keys();
-				
-				while (iter.hasNext()) {
-					String key = (String) iter.next();
-					Object elemObj = contentsObj.opt(key);
-				
-					if(elemObj instanceof JSONArray) { // array field
-						JSONArray array = (JSONArray)elemObj;
-						
-						for (int key2=0; key2<array.length(); key2++) {
-							Object elemArrayObj = array.opt(key2);
-							array.put(key2, convertContentsInBuildRequest(elemArrayObj, key));
+
+			Iterator<?> iter = this.data.keys();
+			while (iter.hasNext()) {
+				String key = (String)iter.next();
+
+				// readonly fields
+				if (key.equals("created") || key.equals("modified")) {
+
+					continue; // skip
+
+				// contents
+				} else if (key.equals("contents")) {
+
+					JSONObject contentsObj = this.data.optJSONObject("contents");
+					if(contentsObj == null) continue; // skip
+
+					Iterator<?> iter2 = contentsObj.keys();
+					while (iter2.hasNext()) {
+						String key2 = (String) iter2.next();
+
+						Object elemObj = contentsObj.opt(key2);
+
+						if(elemObj instanceof JSONArray) { // array field
+							JSONArray array = (JSONArray)elemObj;
+
+							for (int key3=0; key3<array.length(); key3++) {
+								Object elemArrayObj = array.opt(key3);
+								array.put(key3, convertContentsInBuildRequest(elemArrayObj));
+							}
+
+						}else{ // not array field
+
+							contentsObj.put(key2, convertContentsInBuildRequest(elemObj));
+
 						}
-						
-					}else{ // not array field
-						
-						contentsObj.put(key, convertContentsInBuildRequest(elemObj, key));
-						
 					}
+
+					obj.put("contents", contentsObj);
+
+
+				// others
+				} else {
+
+					obj.put(key, this.data.opt(key));
+
 				}
+
 			}
-			
+
 		} catch (JSONException e) {
 			throw new RuntimeException(e);
 		}
-		
+
+
 		return obj;
 	}
 	
-	private Object convertContentsInBuildRequest(Object elemObj, String key) {
+	private Object convertContentsInBuildRequest(Object elemObj) {
 	
 		if(elemObj instanceof ECHOFile) { // _type = file
 			
@@ -474,46 +494,44 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 	/**
 	 * Copy data from a JSONObject
 	 * 
-	 * @param data the source JSONObject
-	 * @throws ECHOException
+	 * @param source the source JSONObject
 	 */
-	protected void copyData(JSONObject data) throws ECHOException {
-		if(data == null) throw new IllegalArgumentException("argument `data` must not be null.");
+	protected void copyData(JSONObject source) {
+		if(source == null) throw new IllegalArgumentException("Argument `source` must not be null.");
 
 		// Reset current all data
 		if(this.data.length() > 0) this.data = new JSONObject();
 
 		// Copying input data
-		Iterator<?> iter = data.keys();
+		Iterator<?> iter = source.keys();
 		while (iter.hasNext()) {
 			String key = (String)iter.next();
 
 			try {
 				
 				// date
-				if(key.equals("created") || key.equals("modified")) {
+				if (key.equals("created") || key.equals("modified")) {
 					
-					String date = data.optString(key);
-					if(date == null) throw new ECHOException(0, "Invalid data type for data-field `" + key + "`.");
+					String date = source.optString(key);
+					if(date == null) continue; // skip
+
 					try {
-						data.put(key, new ECHODate(date));
-					} catch (ParseException e) {
-						throw new ECHOException(e);
+						this.data.put(key, new ECHODate(date));
+					} catch (ParseException ignored) {
+						// skip
 					}
-					
+
 				// acl
-				}else if(key.equals("acl")) {
-					
-					JSONObject aclObj = data.optJSONObject("acl");
-					if(aclObj == null) throw new ECHOException(0, "Invalid data type for data-field `acl`.");
-					this.currentACL = new ECHOACLObject(aclObj);
-					continue;
-					
+				} else if (key.equals("acl")) {
+
+					JSONObject aclObj = source.optJSONObject("acl");
+					if(aclObj != null) this.currentACL = new ECHOACLObject(aclObj);
+
 				// contents
-				}else if(key.equals("contents")) {
+				} else if(key.equals("contents")) {
 	
-					JSONObject contentsObj = data.optJSONObject("contents");
-					if(contentsObj == null) throw new ECHOException(0, "Invalid data type for data-field `contents`.");
+					JSONObject contentsObj = source.optJSONObject("contents");
+					if(contentsObj == null) continue; // skip
 					
 					Iterator<?> iter2 = contentsObj.keys();
 					while (iter2.hasNext()) {
@@ -535,10 +553,16 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 							
 						}
 					}
+
+					this.data.put(key, contentsObj);
+
+					// others
+				} else {
+
+					this.data.put(key, source.opt(key));
+
 				}
 
-				this.data.put(key, data.opt(key));
-				
 			} catch (JSONException e) {
 				throw new RuntimeException(e);
 			}
@@ -546,11 +570,11 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 		}
 	}
 
-	private Object convertContentsInCopyData(Object elemObj) {
+	private Object convertContentsInCopyData(Object source) {
 		
-		if(elemObj instanceof JSONObject) {
+		if(source instanceof JSONObject) {
 		
-			JSONObject elemJSONObj = (JSONObject)elemObj;
+			JSONObject elemJSONObj = (JSONObject)source;
 			String type = elemJSONObj.optString("_type");
 			
 			if(type.equals("file")) { // _type = file
@@ -559,17 +583,17 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 				return ECHODataObject.factory(elemJSONObj);
 			}
 		
-		} else if (elemObj instanceof String && ((String) elemObj).length() == 19) { // (maybe) _type = date
+		} else if (source instanceof String && ((String) source).length() == 19) { // (maybe) _type = date
 			
 			try {
-				return new ECHODate((String) elemObj);
+				return new ECHODate((String) source);
 			} catch (ParseException ignored) {
 				// Wrong date string
 			}
 
 		}
 		
-		return elemObj;
+		return source;
 	}
 	
 	
@@ -962,24 +986,4 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 	
 	/* End JSONObject operators */
 
-
-	/**
-	 * Clone this data object.
-	 */
-	public JSONObject cloneData() {
-		JSONObject data = new JSONObject();
-	
-		Iterator<?> iter = this.data.keys();
-		while (iter.hasNext()) {
-			String key = (String)iter.next();
-			
-			try {
-				data.put(key, this.data.get(key));
-			} catch (JSONException e) {
-				throw new RuntimeException(e);
-			}
-		}
-			
-		return data;
-	}
 }

@@ -69,11 +69,11 @@ public class ECHOMembersGroupObject extends ECHODataObject<ECHOMembersGroupObjec
 	 * Constructs a new ECHOMembersGroupObject based on an existing one on the ECHO server.
 	 * @param instanceId the reference ID of the instance to which this object has belonged
 	 * @param refid the reference ID of the existing one
-	 * @param data a copying group object in JSONObject
+	 * @param source a copying group object in JSONObject
 	 */
-	public ECHOMembersGroupObject(String instanceId, String refid, JSONObject data) throws ECHOException {
+	public ECHOMembersGroupObject(String instanceId, String refid, JSONObject source) {
 		this(instanceId, refid);
-		copyData(data);
+		copyData(source);
 	}
 
 	/* End constructors */
@@ -184,20 +184,23 @@ public class ECHOMembersGroupObject extends ECHODataObject<ECHOMembersGroupObjec
 
 	
 	@Override
-	protected void copyData(JSONObject data) throws ECHOException {
-		if(data == null) throw new IllegalArgumentException("argument `data` must not be null.");
-		JSONArray groups = data.optJSONArray("groups");
+	protected void copyData(JSONObject source) {
+		if(data == null) throw new IllegalArgumentException("Argument `source` must not be null.");
+
+		JSONArray groups = source.optJSONArray("groups");
 
 		JSONObject group = null;
 		if(groups != null) { // if the data is a tree format
 			group = groups.optJSONObject(0);
 		}else{ // the data is a group object
-			group = data;
+			group = source;
 		}
 		
-		if(group == null) throw new ECHOException(0, "Invalid data type for data-field `groups`");
-		group.remove("children");
-		
+		if(group == null) return; // skip
+
+		group.remove("children"); // remove children
+
+		// super
 		super.copyData(group);
 	}
 }

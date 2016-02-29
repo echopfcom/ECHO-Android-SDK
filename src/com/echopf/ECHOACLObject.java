@@ -49,11 +49,11 @@ public class ECHOACLObject {
 	/**
 	 * Constructs a new ECHOACLObject with JSONObject.
 	 *
-	 * @param aclObj the source JSONObject
+	 * @param source the source JSONObject
 	 */
-	public ECHOACLObject(JSONObject aclObj) throws ECHOException {
+	public ECHOACLObject(JSONObject source) {
 		super();
-		copyData(aclObj);
+		copyData(source);
 	}
 
 	/* End constructors */
@@ -318,37 +318,37 @@ public class ECHOACLObject {
 	/**
 	 * Copies data from a JSONObject.
 	 *
-	 * @param aclObj the source JSONObject
-	 * @throws ECHOException
+	 * @param source the source JSONObject
 	 */
-	protected void copyData(JSONObject aclObj) throws ECHOException {
-		if(aclObj == null) throw new IllegalArgumentException("argument `aclObj` must not be null.");
+	protected void copyData(JSONObject source) {
+		if(source == null) throw new IllegalArgumentException("Argument `source` must not be null.");
 
-		Iterator<String> iter = aclObj.keys();
+		Iterator<?> iter = source.keys();
 		while (iter.hasNext()) {
-			String key = iter.next();
-			JSONObject val = aclObj.optJSONObject(key);
-			if(val == null) throw new ECHOException(0, "Invalid data type for aclObj-field `" + key + "`.");
+			String key = (String)iter.next();
+			JSONObject val = source.optJSONObject(key);
+
+			if(val == null) continue; // skip
 			
 			if (key.equals("*")) { // for all visitors
 				putEntryForAll(jsonObjectToECHOACLEntry(val));
 				
 			} else { // the key is memberInstanceId
 
-				Iterator<String> iter2 = val.keys();
+				Iterator<?> iter2 = val.keys();
 				while (iter2.hasNext()) {
-					String key2 = iter2.next();
+					String key2 = (String)iter2.next();
 					JSONObject val2 = val.optJSONObject(key2);
-					if(val2 == null) throw new ECHOException(0, "Invalid data type for aclObj-field `" + key + "`.");
+					if(val2 == null) continue; // skip
 						
 					if(key2.equals("*")) { // for all members
 						putEntryForAllMembers(key, jsonObjectToECHOACLEntry(val2));
 					}else { // for a specified member or group
-						Iterator<String> iter3 = val2.keys();
+						Iterator<?> iter3 = val2.keys();
 						while (iter3.hasNext()) {
-							String key3 = iter3.next();
+							String key3 = (String)iter3.next();
 							JSONObject val3 = val2.optJSONObject(key3);
-							if(val3 == null) throw new ECHOException(0, "Invalid data type for aclObj-field `" + key + "`.");
+							if(val3 == null) continue; // skip
 
 							if(key2.equals("members")) {
 								putEntryForSpecificMember(new ECHOMemberObject(key, key3), jsonObjectToECHOACLEntry(val3));

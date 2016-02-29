@@ -16,7 +16,6 @@
 
 package com.echopf;
 
-import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -65,11 +64,11 @@ public class ECHOInstallation {
 
 	/**
 	 * Constructs a new ECHOInstallation based on an existing one on the remote server.
-	 * @param data a source JSONObject to copy
+	 * @param source a source JSONObject to copy
 	 */
-	public ECHOInstallation(JSONObject data) throws ECHOException {
+	public ECHOInstallation(JSONObject source) {
 		this();
-		copyData(data);
+		copyData(source);
 	}
 	
 	/* End constructors */
@@ -125,15 +124,14 @@ public class ECHOInstallation {
 	/**
 	 * Copies data from a JSONObject.
 	 *
-	 * @param data the source JSONObject
-	 * @throws ECHOException
+	 * @param source the source JSONObject
 	 */
-	protected void copyData(JSONObject data) throws ECHOException {
-		String deviceType = data.optString("device_type");
-		if(!(deviceType instanceof String)) throw new ECHOException(0, "Invalid data type for data-field `device_type`.");
+	protected void copyData(JSONObject source) {
+		String deviceType = source.optString("device_type");
+		if(!(deviceType instanceof String)) return; // skip
 		
-		String deviceToken = data.optString("device_token");
-		if(!(deviceToken instanceof String)) throw new ECHOException(0, "Invalid data type for data-field `device_token`.");
+		String deviceToken = source.optString("device_token");
+		if(!(deviceToken instanceof String)) return; // skip
 
 		this.deviceType = deviceType;
 		this.deviceToken = deviceToken;

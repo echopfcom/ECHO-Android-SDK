@@ -69,12 +69,11 @@ public abstract class ECHOTreeMap<T extends ECHODataObject<T> & TreeNodeable<T>,
 	 *   based on an existing *entire* one on the remote server.
 	 * @param instanceId the reference ID of the instance to which the tree map has belonged
 	 * @param resourceType the type of this object
-	 * @param data a copying tree map in JSONObject
-	 * @throws ECHOException 
+	 * @param source a copying tree map in JSONObject
 	 */
-	protected ECHOTreeMap(String instanceId, String resourceType, JSONObject data) throws ECHOException {
+	protected ECHOTreeMap(String instanceId, String resourceType, JSONObject source) {
 		super(instanceId, resourceType);
-		copyData(data);
+		copyData(source);
 	}
 
 	
@@ -84,12 +83,11 @@ public abstract class ECHOTreeMap<T extends ECHODataObject<T> & TreeNodeable<T>,
 	 * @param instanceId the reference ID of the instance to which the tree map has belonged
 	 * @param resourceType the type of this object
 	 * @param refid the reference ID of the root node of the existing sub one
-	 * @param data a copying tree map in JSONObject
-	 * @throws ECHOException 
+	 * @param source a copying tree map in JSONObject
 	 */
-	protected ECHOTreeMap(String instanceId, String resourceType, String refid, JSONObject data) throws ECHOException {
+	protected ECHOTreeMap(String instanceId, String resourceType, String refid, JSONObject source) {
 		this(instanceId, resourceType, refid);
-		copyData(data);
+		copyData(source);
 	}
 
 	/* End constructors */
@@ -193,9 +191,8 @@ public abstract class ECHOTreeMap<T extends ECHODataObject<T> & TreeNodeable<T>,
 	/**
 	 * Copies data from a JSONObject.
 	 *
-	 * @param data the source JSONObject
-	 * @throws ECHOException 
+	 * @param source the source JSONObject
 	 */
-	protected abstract void copyData(JSONObject data) throws ECHOException;
+	protected abstract void copyData(JSONObject source);
 	
 }

@@ -64,11 +64,11 @@ public class ECHOMailmagObject extends ECHODistributedObject<ECHOMailmagObject>
 	 * Constructs a new ECHOMailmagObject based on an existing one on the remote server.
 	 * @param instanceId the reference ID of a member instance
 	 * @param refid the reference ID of the existing one
-	 * @param data a source JSONObject to copy
+	 * @param source a source JSONObject to copy
 	 */
-	public ECHOMailmagObject(String instanceId, String refid, JSONObject data) throws ECHOException {
+	public ECHOMailmagObject(String instanceId, String refid, JSONObject source) {
 		this(instanceId, refid);
-		copyData(data);
+		copyData(source);
 	}
 
 	/* End constructors */

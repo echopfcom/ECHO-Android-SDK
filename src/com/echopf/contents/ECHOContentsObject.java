@@ -61,11 +61,11 @@ public abstract class ECHOContentsObject<S extends ECHOContentsObject<S>> extend
 	 * @param instanceId the reference ID of the instance to which this object has belonged
 	 * @param resourceType the type of this object
 	 * @param refid the reference ID of the existing one
-	 * @param data a source JSONObject to copy
+	 * @param source a source JSONObject to copy
 	 */
-	protected ECHOContentsObject(String instanceId, String resourceType, String refid, JSONObject data) throws ECHOException {
+	protected ECHOContentsObject(String instanceId, String resourceType, String refid, JSONObject source) {
 		this(instanceId, refid);
-		copyData(data);
+		copyData(source);
 	}
 
 	
@@ -103,38 +103,39 @@ public abstract class ECHOContentsObject<S extends ECHOContentsObject<S>> extend
 	}
 
 	@Override
-	protected void copyData(JSONObject data) throws ECHOException {
-		super.copyData(data);
-		
+	protected void copyData(JSONObject source) {
+		if(source == null) throw new IllegalArgumentException("Argument `source` must not be null.");
+
+
 		try {
 			
 			// categories
-			JSONArray api_categories = this.data.optJSONArray("categories");
-			if (api_categories == null) {
-				
-				throw new ECHOException(0, "Invalid data type for data-field `categories`.");
-			
-			} else {
+			JSONArray api_categories = source.optJSONArray("categories");
+			if (api_categories != null) {
 				
 				JSONArray sdk_categories = new JSONArray();
 				
 				for(int i = 0; i < api_categories.length(); i++) {
 					JSONObject category = api_categories.optJSONObject(i);
-					if(category == null) throw new ECHOException(0, "Invalid data type for data-field `categories`.");
-					
+					if(category == null) continue; // skip
+
 					String refid = category.optString("refid");
-					if(refid.isEmpty()) continue;
+					if(refid.isEmpty()) continue; // skip
 
 					ECHOContentsCategoryObject obj = new ECHOContentsCategoryObject(instanceId, refid, category);
 					sdk_categories.put(obj);
 				}
 				
-				this.data.put("categories", sdk_categories);
+				source.put("categories", sdk_categories);
 			}
 			
 		} catch (JSONException e) {
 			throw new RuntimeException(e);
 		}
+
+
+		// super
+		super.copyData(source);
 	}
 
 }

@@ -75,7 +75,7 @@ public class ECHORecordObject extends ECHOContentsObject<ECHORecordObject>
 	 * @param refid the reference ID of the existing one
 	 * @param data a source JSONObject to copy
 	 */
-	public ECHORecordObject(String instanceId, String refid, JSONObject data) throws ECHOException {
+	public ECHORecordObject(String instanceId, String refid, JSONObject data) {
 		super(instanceId, "record", refid, data);
 	}
 	

@@ -64,11 +64,11 @@ public class ECHOPushNotificationObject extends ECHODistributedObject<ECHOPushNo
 	 * Constructs a new ECHOPushNotificationObject based on an existing one on the remote server.
 	 * @param instanceId the reference ID of a member instance
 	 * @param refid the reference ID of the existing one
-	 * @param data a source JSONObject to copy
+	 * @param source a source JSONObject to copy
 	 */
-	public ECHOPushNotificationObject(String instanceId, String refid, JSONObject data) throws ECHOException {
+	public ECHOPushNotificationObject(String instanceId, String refid, JSONObject source) {
 		this(instanceId, refid);
-		copyData(data);
+		copyData(source);
 	}
 
 	/* End constructors */
