@@ -44,7 +44,6 @@ public class ECHOQuery {
 	 */
     private ECHOQuery() {}
 
-
 	/**
 	 * Does Find objects from the remote server.
 	 * @param sync : if set TRUE, then the main (UI) thread is waited for complete the finding in a background thread. 
@@ -252,47 +251,14 @@ public class ECHOQuery {
 	 * @throws ECHOException
 	 */
 	public static JSONObject request(String path, String httpMethod, JSONObject data, boolean multipart) throws ECHOException  {
-		final String secureDomain = ECHO.secureDomain;
-		if(secureDomain == null) throw new IllegalStateException("The SDK is not initialized.　Please call `ECHO.initialize()`.");
 
-		String url = new StringBuilder("https://").append(secureDomain)
-				.append("/").append(path).append("/rest_api=1.0/").toString();
-
-		// Build query_string
-		if (httpMethod.equals("GET") && data != null) {
-			boolean firstItem = true;
-			Iterator<?> iter = data.keys();
-			while (iter.hasNext()) {
-				if (firstItem) {
-					firstItem = false;
-					url = url.concat("?");
-				} else {
-					url = url.concat("&");
-				}
-				String key = (String)iter.next();
-				String value = data.optString(key);
-				url = url.concat(key);
-				url = url.concat("=");
-				url = url.concat(value);
-			}
-		}
-		
-		HttpsURLConnection httpClient = null;
 		JSONObject response = null;
 
 		try {
-			URL urlConn = new URL(url.toString());
-			httpClient = (HttpsURLConnection) urlConn.openConnection();
-			
-			String jsonStr = ECHOQuery.getResponseString(requestRaw(httpClient, httpMethod, data, multipart));
+			String jsonStr = ECHOQuery.getResponseString(requestRaw(path, httpMethod, data, multipart));
 			response = new JSONObject(jsonStr);
-			
-		} catch (IOException e) {
-			throw new ECHOException(e);
 		} catch (JSONException e) {
 			throw new ECHOException(ECHOException.INVALID_JSON_FORMAT, "Invalid JSON format.");
-		} finally {
-			if (httpClient != null) httpClient.disconnect();
 		}
 		
 		return response;
@@ -301,13 +267,54 @@ public class ECHOQuery {
 	
 	/**
 	 * Sends a HTTP request with optional request contents/parameters.
-	 * @param httpClient HttpsURLConnection
+	 * @param path a request url path
 	 * @param httpMethod a request method (GET/POST/PUT/DELETE)
 	 * @param data request contents/parameters
 	 * @param multipart use multipart/form-data to encode the contents
 	 * @throws ECHOException
 	 */
-	public static InputStream requestRaw(HttpsURLConnection httpClient, String httpMethod, JSONObject data, boolean multipart) throws ECHOException  {
+	public static InputStream requestRaw(String path, String httpMethod, JSONObject data, boolean multipart) throws ECHOException  {
+		final String secureDomain = ECHO.secureDomain;
+		if(secureDomain == null) throw new IllegalStateException("The SDK is not initialized.　Please call `ECHO.initialize()`.");
+
+		String baseUrl = new StringBuilder("https://").append(secureDomain).toString();
+		String url = new StringBuilder(baseUrl).append("/").append(path).toString();
+
+		HttpsURLConnection httpClient = null;
+		
+		try {
+			URL urlObj = new URL(url);
+			
+			StringBuilder apiUrl = new StringBuilder(baseUrl).append(urlObj.getPath()).append("/rest_api=1.0/");
+			
+			// Append the QueryString contained in path
+			boolean isContainQuery = urlObj.getQuery() != null;
+			if(isContainQuery) apiUrl.append("?").append(urlObj.getQuery());
+
+			// Append the QueryString from data
+			if (httpMethod.equals("GET") && data != null) {
+				boolean firstItem = true;
+				Iterator<?> iter = data.keys();
+				while (iter.hasNext()) {
+					if (firstItem && !isContainQuery) {
+						firstItem = false;
+						apiUrl.append("?");
+					} else {
+						apiUrl.append("&");
+					}
+					String key = (String)iter.next();
+					String value = data.optString(key);
+					apiUrl.append(key);
+					apiUrl.append("=");
+					apiUrl.append(value);
+				}
+			}
+
+			URL urlConn = new URL(apiUrl.toString());
+			httpClient = (HttpsURLConnection) urlConn.openConnection();
+		} catch (IOException e) {
+			throw new ECHOException(e);
+		}
 		
 		final String appId = ECHO.appId;
 		final String appKey = ECHO.appKey;
@@ -518,8 +525,9 @@ public class ECHOQuery {
 					}
 				}
 			}
-			
+
 			throw new ECHOException(e);	
+			
 		}
 		
 		return responseInputStream;

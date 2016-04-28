@@ -17,16 +17,12 @@
 package com.echopf;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
-import javax.net.ssl.HttpsURLConnection;
 
 import org.json.JSONObject;
 
@@ -80,32 +76,18 @@ public class ECHOFile {
 	 */
 	public byte[] getRemoteBytes() throws ECHOException {
 		
-		if(this.urlPath == null) return null;
-		
 		final String urlPath = this.urlPath;
-		if(urlPath.equals("")) throw new ECHOException(0, "File URL not setted.");
-		final String secureDomain = ECHO.secureDomain;
-		if(secureDomain == null) throw new IllegalStateException("The SDK is not initialized.　Please call `ECHO.initialize()`.");
-
-		String url = new StringBuilder("https://").append(secureDomain).append(urlPath).toString();
-
-		HttpsURLConnection httpClient = null;
-
-		try {
-			URL urlConn = new URL(url);
-			httpClient = (HttpsURLConnection) urlConn.openConnection();
-		} catch (IOException e) {
-			throw new ECHOException(e);
-		}
+		if(urlPath == null) return null;
 		
-		final HttpsURLConnection fHttpClient = httpClient;
+		// final String urlPath = this.urlPath;
+		if(urlPath.equals("")) throw new ECHOException(0, "File URL not setted.");
 		
 		// Get ready a background thread
 	    ExecutorService executor = Executors.newSingleThreadExecutor();
 	    Callable<byte[]> communicator = new Callable<byte[]>() {
 	    	  @Override
 	    	  public byte[] call() throws Exception {
-	    		  InputStream is = ECHOQuery.requestRaw(fHttpClient, "GET", null, false);
+	    		  InputStream is = ECHOQuery.requestRaw(urlPath.substring(1), "GET", null, false);
 	    		  
 	    		  int nRead;
 	    		  byte[] data = new byte[16384];
@@ -128,8 +110,6 @@ public class ECHOFile {
 	    } catch (ExecutionException e) {
 	    	Throwable e2 = e.getCause();
 	    	throw new ECHOException(e2);
-		} finally {
-			if(httpClient != null) httpClient.disconnect();
 		}
 	    
 		return null;
