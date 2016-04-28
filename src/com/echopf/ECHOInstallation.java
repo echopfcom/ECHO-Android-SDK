@@ -33,7 +33,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Handler;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
 
@@ -236,11 +236,16 @@ public class ECHOInstallation {
      */
 	protected boolean checkPlayServices(Context context) {
     	if(context == null) throw new IllegalArgumentException("The SDK is not initialized. Please call `ECHO.initialize()`.");
-    		
-        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(context);
+    	
+        GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
+        int resultCode = googleAPI.isGooglePlayServicesAvailable(context);
+        // int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(context);
+        
         if (resultCode != ConnectionResult.SUCCESS) {
-            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
-                GooglePlayServicesUtil.getErrorDialog(resultCode, (Activity) context, PLAY_SERVICES_RESOLUTION_REQUEST).show();
+            if (googleAPI.isUserResolvableError(resultCode)) {
+            // if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+            	googleAPI.getErrorDialog((Activity) context, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST).show();
+                // GooglePlayServicesUtil.getErrorDialog(resultCode, (Activity) context, PLAY_SERVICES_RESOLUTION_REQUEST).show();
             } else {
                 throw new RuntimeException("This device is not supported.");
             }
