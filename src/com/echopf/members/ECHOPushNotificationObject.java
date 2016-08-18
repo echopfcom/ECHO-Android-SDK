@@ -16,7 +16,11 @@
 
 package com.echopf.members;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.echopf.*;
+
 import org.json.JSONObject;
 
 
@@ -141,4 +145,23 @@ public class ECHOPushNotificationObject extends ECHODistributedObject<ECHOPushNo
 			throw new InternalError();
 		}
 	}
+
+
+	/* Begin Parcel methods */
+	
+	public static final Parcelable.Creator<ECHOPushNotificationObject> CREATOR = new Parcelable.Creator<ECHOPushNotificationObject>() {  
+        public ECHOPushNotificationObject createFromParcel(Parcel in) {  
+            return new ECHOPushNotificationObject(in);
+        }
+        
+        public ECHOPushNotificationObject[] newArray(int size) {  
+            return new ECHOPushNotificationObject[size];  
+        }  
+    };
+	
+    public ECHOPushNotificationObject(Parcel in) {
+    	super(in);
+     }
+     
+ 	/* End Parcel methods */
 }

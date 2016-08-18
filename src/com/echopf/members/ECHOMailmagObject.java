@@ -16,7 +16,11 @@
 
 package com.echopf.members;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.echopf.*;
+
 import org.json.JSONObject;
 
 
@@ -141,4 +145,23 @@ public class ECHOMailmagObject extends ECHODistributedObject<ECHOMailmagObject>
 			throw new InternalError();
 		}
 	}
+
+
+	/* Begin Parcel methods */
+	
+	public static final Parcelable.Creator<ECHOMailmagObject> CREATOR = new Parcelable.Creator<ECHOMailmagObject>() {  
+        public ECHOMailmagObject createFromParcel(Parcel in) {  
+            return new ECHOMailmagObject(in);
+        }
+        
+        public ECHOMailmagObject[] newArray(int size) {  
+            return new ECHOMailmagObject[size];  
+        }  
+    };
+	
+    public ECHOMailmagObject(Parcel in) {
+    	super(in);
+     }
+     
+ 	/* End Parcel methods */
 }

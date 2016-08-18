@@ -16,6 +16,9 @@
 
 package com.echopf.contents.databases;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.echopf.Deletable;
 import com.echopf.DeleteCallback;
 import com.echopf.ECHOException;
@@ -150,4 +153,22 @@ public class ECHORecordObject extends ECHOContentsObject<ECHORecordObject>
 		}
 	}
 
+
+	/* Begin Parcel methods */
+	
+	public static final Parcelable.Creator<ECHORecordObject> CREATOR = new Parcelable.Creator<ECHORecordObject>() {  
+        public ECHORecordObject createFromParcel(Parcel in) {  
+            return new ECHORecordObject(in);
+        }
+        
+        public ECHORecordObject[] newArray(int size) {  
+            return new ECHORecordObject[size];  
+        }  
+    };
+	
+    public ECHORecordObject(Parcel in) {
+    	super(in);
+     }
+     
+ 	/* End Parcel methods */
 }

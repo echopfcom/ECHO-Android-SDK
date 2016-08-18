@@ -16,6 +16,9 @@
 
 package com.echopf.contents;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.echopf.*;
 
 import org.json.JSONArray;
@@ -202,4 +205,23 @@ public class ECHOContentsCategoryObject extends ECHODataObject<ECHOContentsCateg
 		// super
 		super.copyData(category);
 	}
+
+
+	/* Begin Parcel methods */
+	
+	public static final Parcelable.Creator<ECHOContentsCategoryObject> CREATOR = new Parcelable.Creator<ECHOContentsCategoryObject>() {  
+        public ECHOContentsCategoryObject createFromParcel(Parcel in) {  
+            return new ECHOContentsCategoryObject(in);
+        }
+        
+        public ECHOContentsCategoryObject[] newArray(int size) {  
+            return new ECHOContentsCategoryObject[size];  
+        }  
+    };
+	
+    public ECHOContentsCategoryObject(Parcel in) {
+    	super(in);
+     }
+     
+ 	/* End Parcel methods */
 }

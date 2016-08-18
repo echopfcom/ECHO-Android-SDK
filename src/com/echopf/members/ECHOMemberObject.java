@@ -18,6 +18,9 @@ package com.echopf.members;
 
 import java.text.ParseException;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.echopf.*;
 
 import org.json.JSONArray;
@@ -242,4 +245,23 @@ public class ECHOMemberObject extends ECHODataObject<ECHOMemberObject>
 		// super
 		super.copyData(source);
 	}
+
+
+	/* Begin Parcel methods */
+	
+	public static final Parcelable.Creator<ECHOMemberObject> CREATOR = new Parcelable.Creator<ECHOMemberObject>() {  
+        public ECHOMemberObject createFromParcel(Parcel in) {  
+            return new ECHOMemberObject(in);
+        }
+        
+        public ECHOMemberObject[] newArray(int size) {  
+            return new ECHOMemberObject[size];  
+        }  
+    };
+	
+    public ECHOMemberObject(Parcel in) {
+    	super(in);
+     }
+     
+ 	/* End Parcel methods */
 }

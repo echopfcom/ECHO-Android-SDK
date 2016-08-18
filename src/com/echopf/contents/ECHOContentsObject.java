@@ -16,6 +16,8 @@
 
 package com.echopf.contents;
 
+import android.os.Parcel;
+
 import com.echopf.*;
 
 import org.json.JSONArray;
@@ -138,4 +140,12 @@ public abstract class ECHOContentsObject<S extends ECHOContentsObject<S>> extend
 		super.copyData(source);
 	}
 
+
+	/* Begin Parcel methods */
+	
+    public ECHOContentsObject(Parcel in) {
+    	super(in);
+     }
+
+	/* End Parcel methods */
 }

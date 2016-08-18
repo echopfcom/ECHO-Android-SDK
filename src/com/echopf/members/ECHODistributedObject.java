@@ -18,6 +18,8 @@ package com.echopf.members;
 
 import java.text.ParseException;
 
+import android.os.Parcel;
+
 import com.echopf.*;
 
 import org.json.JSONArray;
@@ -335,4 +337,13 @@ public abstract class ECHODistributedObject<S extends ECHODistributedObject<S>> 
 		// super
 		super.copyData(source);
 	}
+
+	
+	/* Begin Parcel methods */
+	
+    public ECHODistributedObject(Parcel in) {
+    	super(in);
+     }
+
+	/* End Parcel methods */
 }

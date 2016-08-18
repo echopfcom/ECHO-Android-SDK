@@ -18,6 +18,9 @@ package com.echopf.contents.blogs;
 
 import java.text.ParseException;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.echopf.Deletable;
 import com.echopf.DeleteCallback;
 import com.echopf.ECHODate;
@@ -198,4 +201,22 @@ public class ECHOEntryObject extends ECHOContentsObject<ECHOEntryObject>
 		super.copyData(source);
 	}
 
+
+	/* Begin Parcel methods */
+	
+	public static final Parcelable.Creator<ECHOEntryObject> CREATOR = new Parcelable.Creator<ECHOEntryObject>() {  
+        public ECHOEntryObject createFromParcel(Parcel in) {  
+            return new ECHOEntryObject(in);
+        }
+        
+        public ECHOEntryObject[] newArray(int size) {  
+            return new ECHOEntryObject[size];  
+        }  
+    };
+	
+    public ECHOEntryObject(Parcel in) {
+    	super(in);
+     }
+     
+ 	/* End Parcel methods */
 }

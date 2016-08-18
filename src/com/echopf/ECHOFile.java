@@ -24,6 +24,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 
@@ -56,6 +57,11 @@ public class ECHOFile {
 	public ECHOFile(JSONObject obj) {
 		this.fileName = obj.optString("name");
 		this.urlPath = obj.optString("url_path");
+		
+		String bytes = obj.optString("bytes");
+		if (!bytes.isEmpty()) {
+			this.bytes = bytes.getBytes();
+		}
 	}
 
 	/* End constructors */
@@ -124,6 +130,24 @@ public class ECHOFile {
 	public byte[] getLocalBytes() {
 		if(this.bytes == null) return null;
 		return this.bytes;
+	}
+
+	
+	/**
+	 * Encodes this object as a compact JSON string.
+	 *
+	 * @return the formatted JSON string
+	 */
+	public String toString() {
+		JSONObject json = new JSONObject();
+		try {
+			if(!fileName.isEmpty()) json.put("name", fileName);
+			if(!urlPath.isEmpty()) json.put("url_path", urlPath);
+			if(bytes != null) json.put("bytes", bytes.toString());
+		} catch (JSONException e) {
+			throw new RuntimeException(e);
+		}
+		return json.toString();
 	}
 }
 

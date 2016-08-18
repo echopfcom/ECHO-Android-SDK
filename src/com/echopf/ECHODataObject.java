@@ -33,13 +33,15 @@ import com.echopf.contents.databases.ECHORecordObject;
 import com.echopf.members.ECHOMemberObject;
 
 import android.os.Handler;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 
 /**
  * An ECHODataObject is an abstract data object.
  * Particular data objects are implemented based on this class.
  */
-public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOObject {
+public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOObject implements Parcelable {
 	
 	protected JSONObject data = null;
 	private ECHOACLObject newACL = null;
@@ -986,4 +988,45 @@ public abstract class ECHODataObject<S extends ECHODataObject<S>> extends ECHOOb
 	
 	/* End JSONObject operators */
 
+	
+	/* Begin Parcel methods */
+	
+    public int describeContents() {  
+        return 0;  
+    }
+
+    public void writeToParcel(Parcel out, int flags) {
+    	out.writeString(this.instanceId);
+    	out.writeString(this.resourceType);
+    	out.writeString(this.refid);
+
+    	out.writeString((data != null) ? data.toString() : "");
+        out.writeString((newACL != null) ? newACL.toString() : "");
+        out.writeString((currentACL != null) ? currentACL.toString() : "");
+        out.writeString((multipart != null) ? multipart.toString() : "");
+    }
+    
+    @SuppressLint("UseValueOf")
+	protected ECHODataObject(Parcel in) {
+    	this(in.readString(), in.readString(), in.readString());
+    	
+    	try {
+    		String strData = in.readString();
+			if(!strData.isEmpty()) copyData(new JSONObject(strData));
+			
+			String strNewACL = in.readString();
+			if(!strNewACL.isEmpty()) newACL = new ECHOACLObject(new JSONObject());
+			
+			String strCurrentACL = in.readString();
+			if(!strCurrentACL.isEmpty()) currentACL = new ECHOACLObject(new JSONObject(strCurrentACL));
+		
+    	} catch (JSONException e) {
+			throw new RuntimeException(e);
+		}
+    	
+    	String strMultipart = in.readString();
+    	if (!strMultipart.isEmpty()) multipart = new Boolean(strMultipart);
+    }
+    
+ 	/* End Parcel methods */
 }
