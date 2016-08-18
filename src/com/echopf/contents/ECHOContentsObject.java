@@ -52,8 +52,8 @@ public abstract class ECHOContentsObject<S extends ECHOContentsObject<S>> extend
 	 * @param resourceType the type of this object
 	 * @param refid the reference ID of the existing one
 	 */
-	protected ECHOContentsObject(String instanceId, String resource_path, String refid) {
-		super(instanceId, resource_path, refid);
+	protected ECHOContentsObject(String instanceId, String resourceType, String refid) {
+		super(instanceId, resourceType, refid);
 	}
 
 	
@@ -66,7 +66,7 @@ public abstract class ECHOContentsObject<S extends ECHOContentsObject<S>> extend
 	 * @param source a source JSONObject to copy
 	 */
 	protected ECHOContentsObject(String instanceId, String resourceType, String refid, JSONObject source) {
-		this(instanceId, refid);
+		this(instanceId, resourceType, refid);
 		copyData(source);
 	}
 
