@@ -82,18 +82,12 @@ public class ECHOFile {
 	 */
 	public byte[] getRemoteBytes() throws ECHOException {
 		
-		final String urlPath = this.urlPath;
-		if(urlPath == null) return null;
-		
-		// final String urlPath = this.urlPath;
-		if(urlPath.equals("")) throw new ECHOException(0, "File URL not setted.");
-		
 		// Get ready a background thread
 	    ExecutorService executor = Executors.newSingleThreadExecutor();
 	    Callable<byte[]> communicator = new Callable<byte[]>() {
 	    	  @Override
 	    	  public byte[] call() throws Exception {
-	    		  InputStream is = ECHOQuery.requestRaw(urlPath.substring(1), "GET", null, false);
+	    		  InputStream is = getRemoteInputStream();
 	    		  
 	    		  int nRead;
 	    		  byte[] data = new byte[16384];
@@ -120,7 +114,22 @@ public class ECHOFile {
 	    
 		return null;
 	}
-
+	
+	/**
+	 * Gets an InputStream to get remote bytes.
+	 * @return InputStream
+	 * @throws ECHOException
+	 */
+	public InputStream getRemoteInputStream() throws ECHOException {
+		
+		final String urlPath = this.urlPath;
+		if(urlPath == null) return null;
+		
+		// final String urlPath = this.urlPath;
+		if(urlPath.equals("")) throw new ECHOException(0, "File URL not setted.");
+		
+		return ECHOQuery.requestRaw(urlPath.substring(1), "GET", null, false);
+	}
 	
 	/**
 	 * {@.en Gets a local file data.}
