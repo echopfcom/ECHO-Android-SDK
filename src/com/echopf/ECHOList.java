@@ -121,19 +121,13 @@ public class ECHOList<S extends ECHODataObject<S>> extends ArrayList<S> {
 	protected void copyPaginateData(JSONObject data) throws ECHOException {
 		if(data == null) throw new IllegalArgumentException("argument `data` must not be null.");
 
-		try {
-			
-			this.page = data.getInt("page");
-			this.prevPage = data.optInt("prevPage");
-			this.nextPage = data.optInt("nextPage");
-			this.pageCount = data.getInt("pageCount");
-			this.count = data.getInt("count");
-			this.limit = data.getInt("limit");
-			this.order = data.getString("order");
-			this.asc = data.getBoolean("asc");
-
-		} catch (JSONException e) {
-			throw new ECHOException(0, "Invalid data type for argument `data`.");
-		}
+		this.page = data.optInt("page");
+		this.prevPage = data.optInt("prevPage");
+		this.nextPage = data.optInt("nextPage");
+		this.pageCount = data.optInt("pageCount");
+		this.count = data.optInt("count");
+		this.limit = data.optInt("limit");
+		this.order = data.optString("order");
+		this.asc = data.optBoolean("asc");
 	}
 }
