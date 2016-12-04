@@ -16,26 +16,21 @@
 
 package com.echopf;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.app.Activity;
-import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Handler;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.gcm.GoogleCloudMessaging;
-import com.google.android.gms.iid.InstanceID;
+import com.google.firebase.iid.FirebaseInstanceId;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 
 /**
@@ -147,7 +142,7 @@ public class ECHOInstallation {
 	 * @throws ECHOException 
 	 */
 	protected void doGetRegistrationId(final boolean sync, final InstallationCallback callback) throws ECHOException {
-		if(!checkPlayServices(ECHO.context)) return;
+		// if(!checkPlayServices(ECHO.context)) return;
 		
 		// Get senderId from AndroidManifest.xml
 		String senderId = null;
@@ -169,19 +164,19 @@ public class ECHOInstallation {
 
 	    	@Override
 	    	public Object call() throws ECHOException {
-
     			ECHOException exception = null;
 
-				InstanceID instanceID = InstanceID.getInstance(ECHO.context);
+				// InstanceID instanceID = InstanceID.getInstance(ECHO.context);
 		        String token = null;
-		        
-				try {
-					token = instanceID.getToken(fSenderId, GoogleCloudMessaging.INSTANCE_ID_SCOPE);
-    	    		synchronized (lock) {
-    	    			deviceToken = token;
-    	    		}
-				} catch (Exception e) {
-					exception = new ECHOException(e);
+
+				// Get updated InstanceID token.
+				token = FirebaseInstanceId.getInstance().getToken();
+				// Log.d(TAG, "Refreshed token: " + refreshedToken);
+				// TODO: Implement this method to send any registration to your app's servers.
+
+				// token = instanceID.getToken(fSenderId, GoogleCloudMessaging.INSTANCE_ID_SCOPE);
+				synchronized (lock) {
+					deviceToken = token;
 				}
 			
     			if(sync == false) {
@@ -226,31 +221,5 @@ public class ECHOInstallation {
 		    }
 	    }
 	}
-	
-	
-	/**
-     * Checks whether Google-Play-Services is available.
-     *
-     * @param context
-     * @return bool
-     */
-	protected boolean checkPlayServices(Context context) {
-    	if(context == null) throw new IllegalArgumentException("The SDK is not initialized. Please call `ECHO.initialize()`.");
-    	
-        GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
-        int resultCode = googleAPI.isGooglePlayServicesAvailable(context);
-        // int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(context);
-        
-        if (resultCode != ConnectionResult.SUCCESS) {
-            if (googleAPI.isUserResolvableError(resultCode)) {
-            // if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
-            	googleAPI.getErrorDialog((Activity) context, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST).show();
-                // GooglePlayServicesUtil.getErrorDialog(resultCode, (Activity) context, PLAY_SERVICES_RESOLUTION_REQUEST).show();
-            } else {
-                throw new RuntimeException("This device is not supported.");
-            }
-            return false;
-        }
-        return true;
-    }
+
 }

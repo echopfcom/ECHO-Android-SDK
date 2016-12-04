@@ -29,21 +29,32 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 
-import com.google.android.gms.gcm.GcmListenerService;
+import com.google.firebase.messaging.FirebaseMessagingService;
+import com.google.firebase.messaging.RemoteMessage;
 
+import java.util.Map;
 
 /**
  *  A ECHOGcmListenerService is GCM push notification receiver class. 
  */
-public class ECHOGcmListenerService extends GcmListenerService {
+public class ECHOFcmListenerService extends FirebaseMessagingService {
 	
 	private String NOTIFY_ONLY_LATEST_KEY = "com.echopf.push.notify_only_latest";
 	private String NOTIFICATION_ICON_KEY = "com.echopf.push.notification_icon";
 	private String PUSH_OPEN_ACTIVITY_KEY = "com.echopf.push.open_activity";
 	
 	@Override
-	public void onMessageReceived(String from, Bundle data) {
-		if (!data.containsKey("message") && !data.containsKey("title")) return;
+    public void onMessageReceived(RemoteMessage message){
+        String from = message.getFrom();
+        Map<String, String> payload = message.getData();
+
+        Bundle data = new Bundle();
+        for (String key : payload.keySet()) {
+            data.putString(key, payload.get(key));
+        }
+
+
+        if (!data.containsKey("message") && !data.containsKey("title")) return;
 
     	// get ApplicationInfo
         ApplicationInfo appInfo = null;
